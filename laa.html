@@ -1,0 +1,3884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Blockchain Club</title>
+<meta name="description" content="A university student organization researching distributed systems, applied cryptography, and offensive & defensive security." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js">
+document.addEventListener('click', e => {
+  const link = e.target.closest('a[href^="#/"]');
+  if(!link || e.defaultPrevented) return;
+  const href = link.getAttribute('href');
+  if(!href || href === location.hash) return;
+  runAsciiTransition(href);
+});
+
+</script>
+<style>
+  
+
+.blockchain-demo-section{
+  border-top:1px solid var(--border);
+}
+
+.blockchain-demo-intro{
+  max-width:600px;
+  margin-bottom:40px;
+}
+
+.blockchain-demo{
+  display:grid;
+  grid-template-columns:1.5fr .8fr;
+  gap:40px;
+  align-items:start;
+}
+
+.chain{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  overflow-x:auto;
+  padding:20px 0 30px;
+}
+
+.chain-block{
+  flex:0 0 190px;
+  padding:18px;
+  border:1px solid var(--border);
+  background:var(--bg-alt);
+  position:relative;
+  transition:
+    transform .3s ease,
+    border-color .3s ease;
+}
+
+.chain-block:hover{
+  transform:translateY(-4px);
+  border-color:var(--accent);
+}
+
+.block-top{
+  display:flex;
+  justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--text-faint);
+}
+
+.block-line{
+  height:1px;
+  background:var(--border);
+  margin:14px 0;
+}
+
+.block-data{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--text);
+  min-height:34px;
+}
+
+.block-hash{
+  margin-top:18px;
+  font-size:9px;
+  color:var(--accent-bright);
+}
+
+.chain-block:not(:last-child)::after{
+  content:'→';
+  position:absolute;
+  right:-25px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--accent);
+  font-family:'JetBrains Mono',monospace;
+}
+
+.transaction-panel{
+  padding:24px;
+  border:1px solid var(--border);
+  background:var(--bg-alt);
+}
+
+.transaction-inputs{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:22px 0;
+}
+
+.transaction-inputs input{
+  width:100%;
+  min-width:0;
+  padding:12px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  outline:none;
+}
+
+.transaction-inputs input:focus{
+  border-color:var(--accent);
+}
+
+.tx-arrow{
+  color:var(--accent);
+  font-family:'JetBrains Mono',monospace;
+}
+
+.blockchain-status{
+  margin-top:18px;
+  font-size:9px;
+  letter-spacing:.08em;
+  color:var(--text-faint);
+}
+
+@media(max-width:800px){
+  .blockchain-demo{
+    grid-template-columns:1fr;
+  }
+}
+  .selected-event{
+  margin-top:16px;
+  padding:16px;
+  border-left:2px solid var(--accent);
+  background:var(--accent-dim);
+}
+
+.selected-event-title{
+  font-size:16px;
+  color:var(--text);
+}
+
+.selected-event-meta{
+  margin-top:7px;
+  color:var(--text-faint);
+  font-size:9px;
+  letter-spacing:.05em;
+}
+
+.selected-event-description{
+  margin-top:12px;
+  color:var(--text-dim);
+  font-size:13px;
+  line-height:1.6;
+}
+  .calendar-event-dot{
+  width:6px;
+  height:6px;
+  margin-top:10px;
+  background:var(--accent);
+  border-radius:50%;
+}co
+
+.calendar-details{
+  padding:26px 30px;
+  border-top:1px solid var(--border);
+  background:rgba(255,255,255,.01);
+}
+
+.calendar-details h3{
+  margin-top:10px;
+  font-size:18px;
+  font-weight:500;
+}
+
+.calendar-details p{
+  margin-top:8px;
+  color:var(--text-dim);
+  font-size:13px;
+  line-height:1.6;
+}
+
+.calendar-day{
+  cursor:pointer;
+}
+
+.calendar-day.selected{
+  background:var(--accent-dim);
+}
+
+.calendar-day.selected .calendar-number{
+  color:var(--text);
+}
+.calendar-events{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.calendar-event{
+  padding:5px 7px;
+  border-left:2px solid var(--accent);
+  background:var(--accent-dim);
+  color:var(--text);
+  font-family:var(--font-mono);
+  font-size:9px;
+  line-height:1.4;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+:root{
+  --bg:#070707;
+  --bg-alt:#0c0c0c;
+  --bg-elevated:#111110;
+  --text:#f1ece1;
+  --text-dim:#8b8a85;
+  --text-faint:#4c4b47;
+  --border:#1d1d1c;
+  --border-light:#2b2b29;
+  --accent:#900c20;
+  --accent-bright:#900c20;
+  --accent-dim:#2c1216;
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --container:1240px;
+  --radius:2px;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--font-body);font-weight:400;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:500;margin:0;letter-spacing:-0.01em;color:var(--text);}
+p{margin:0;}
+a{color:inherit;text-decoration:none;}
+ul{margin:0;padding:0;list-style:none;}
+button{font-family:inherit;cursor:pointer;}
+input,textarea,select{font-family:var(--font-body);}
+img{max-width:100%;display:block;}
+::selection{background:var(--accent);color:#fff;}
+:focus-visible{outline:1.5px solid var(--accent-bright);outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;scroll-behavior:auto !important;}
+}
+.container{max-width:var(--container);margin:0 auto;padding:0 32px;}
+.mono{font-family:var(--font-mono);}
+.text-dim{color:var(--text-dim);}
+.text-faint{color:var(--text-faint);}
+.accent{color:var(--accent-bright);}
+
+
+.eyebrow{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--text-dim);display:inline-flex;align-items:center;gap:8px;
+}
+.eyebrow::before{content:'';width:5px;height:5px;background:var(--accent);display:inline-block;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:14px 26px;font-family:var(--font-mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;
+  border:1px solid var(--border-light);border-radius:var(--radius);background:transparent;color:var(--text);
+  transition:border-color .25s ease, background .25s ease, transform .25s ease, color .25s ease;
+  white-space:nowrap;
+}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#f7ede9;}
+.btn-primary:hover{background:var(--accent-bright);border-color:var(--accent-bright);transform:translateY(-1px);}
+.btn-outline:hover{border-color:var(--text-dim);transform:translateY(-1px);}
+.btn-sm{padding:9px 16px;font-size:10.5px;}
+.link-btn{font-size:11px;letter-spacing:.08em;color:var(--text-dim);border:none;background:none;padding:4px 0;border-bottom:1px solid transparent;}
+.link-btn:hover{color:var(--text);border-color:var(--text-dim);}
+.link-btn.danger:hover{color:var(--accent-bright);border-color:var(--accent-bright);}
+.big-num{font-family:var(--font-display);font-weight:300;color:var(--text-faint);line-height:1;}
+.divider{border:none;border-top:1px solid var(--border);margin:0;}
+.badge{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;padding:4px 8px;border:1px solid var(--border-light);text-transform:uppercase;color:var(--text-dim);}
+.badge.published{color:#c9c4b8;border-color:#3a3a37;}
+.badge.draft{color:var(--text-faint);}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#7fae86;display:inline-block;box-shadow:0 0 6px #7fae8688;}
+.status-badge{display:flex;align-items:center;gap:8px;font-size:10.5px;letter-spacing:.1em;color:var(--text-dim);}
+
+
+.section{padding:100px 0;border-top:1px solid var(--border);}
+.section:first-of-type{border-top:none;}
+.section-head{display:flex;gap:28px;align-items:flex-start;margin-bottom:56px;}
+.section-head .big-num{font-size:56px;min-width:70px;}
+.section-head h2{font-size:clamp(26px,3.4vw,38px);text-transform:uppercase;letter-spacing:0.01em;}
+.section-head .section-copy{color:var(--text-dim);max-width:440px;margin-top:10px;font-size:15px;}
+.section-top-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;}
+
+
+.nav{position:fixed;top:0;left:0;right:0;z-index:10000;border-bottom:1px solid var(--border);
+  background:rgba(7,7,7,.78);backdrop-filter:blur(10px);}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px;}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.nav-logo img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-name {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.nav-links{display:flex;gap:34px;}
+.nav-link{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);position:relative;padding:4px 0;transition:color .2s;}
+.nav-link::after{content:'';position:absolute;left:0;bottom:-3px;width:0;height:1px;background:var(--accent-bright);transition:width .25s ease;}
+.nav-link:hover,.nav-link.active{color:var(--text);}
+.nav-link:hover::after,.nav-link.active::after{width:100%;}
+.nav-toggle{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:8px;}
+.nav-toggle span{width:20px;height:1px;background:var(--text);display:block;}
+@media (max-width:900px){
+  .nav-links{position:fixed;top:72px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--border);
+    flex-direction:column;gap:0;max-height:0;overflow:hidden;transition:max-height .3s ease;}
+  .nav.nav-open .nav-links{max-height:520px;}
+  .nav-links .nav-link{padding:16px 32px;border-top:1px solid var(--border);width:100%;}
+  .nav-toggle{display:flex;}
+}
+
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-top:70px;overflow:hidden;}
+.network-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.4;pointer-events:none;}
+.hero-inner{position:relative;z-index:2;} .hero-title::after{content:"";position:absolute;left:-10%;top:8%;width:75%;height:72%;background:radial-gradient(ellipse,rgba(144,12,32,.18),transparent 68%);filter:blur(20px);z-index:-1;pointer-events:none;}
+.hero-title{font-size:clamp(38px,7.2vw,84px);text-transform:uppercase;line-height:.98;letter-spacing:-0.01em;margin:14px 0 26px;position:relative;text-shadow:0 0 34px rgba(208,43,68,.18);}
+.hero-title span{display:block;}
+.hero-desc{max-width:520px;color:var(--text-dim);font-size:16px;margin-bottom:36px;}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;}
+
+
+.games-promo-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.72fr);gap:56px;align-items:center;}
+.packet-mini{border:1px solid var(--border);background:rgba(255,255,255,.015);padding:20px;min-height:230px;}
+.packet-mini-head,.packet-mini-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.packet-stream{display:grid;gap:7px;margin:22px 0;min-height:108px;}
+.packet-row{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;font:10px var(--font-mono);color:var(--text-dim);}
+.packet-bar{height:5px;background:rgba(255,255,255,.08);position:relative;overflow:hidden;}
+.packet-bar span{display:block;height:100%;width:42%;background:rgba(208,43,68,.8);animation:packetMove 1.8s linear infinite;}
+.packet-row.safe .packet-bar span{background:rgba(230,225,215,.28);}
+.packet-mini-actions{border-top:1px solid var(--border);padding-top:14px;}
+@keyframes packetMove{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+@media (max-width:800px){.games-promo-grid{grid-template-columns:1fr;gap:30px;}}
+.games-page-card{border:1px solid var(--border);padding:34px;display:flex;justify-content:space-between;align-items:center;gap:28px;background:rgba(255,255,255,.015);}.games-page-card h2{margin:10px 0;font-size:clamp(30px,4vw,54px);}@media(max-width:700px){.games-page-card{flex-direction:column;align-items:flex-start;}}
+
+
+
+.row-list{display:flex;flex-direction:column;}
+.row-item{display:grid;grid-template-columns:60px 1fr auto;gap:20px;align-items:center;padding:26px 4px;
+  border-top:1px solid var(--border);transition:padding-left .25s ease,border-color .25s ease;position:relative;}
+.row-list a.row-item{border-top:1px solid var(--border);}
+.row-item:last-child{border-bottom:1px solid var(--border);}
+.row-item:hover{padding-left:14px;border-color:var(--border-light);}
+.row-item:hover .row-arrow{transform:translateX(4px);opacity:1;}
+.row-index{font-family:var(--font-mono);color:var(--text-faint);font-size:13px;}
+.row-main .row-type{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;color:var(--accent-bright);text-transform:uppercase;margin-bottom:6px;}
+.row-main h3{font-size:19px;font-weight:500;margin-bottom:4px;}
+.row-main .row-meta{font-family:var(--font-mono);font-size:11.5px;color:var(--text-dim);letter-spacing:.03em;}
+.row-arrow{font-family:var(--font-mono);color:var(--text-dim);opacity:.5;transition:all .25s ease;}
+@media (max-width:640px){.row-item{grid-template-columns:32px 1fr auto;}.row-main h3{font-size:16px;}}
+
+
+.grid{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid > *{background:var(--bg);padding:32px;}
+@media (max-width:900px){.grid-3,.grid-4{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:560px){.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+.img-placeholder{position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;
+  background:repeating-linear-gradient(135deg, var(--border) 0 1px, transparent 1px 13px), var(--bg-elevated);
+  border:1px solid var(--border);}
+.img-placeholder::after{content:'';position:absolute;top:10px;right:10px;width:6px;height:6px;background:var(--accent);}
+.img-placeholder.portrait{aspect-ratio:3/4;}
+.cover-img{width:100%;aspect-ratio:16/10;object-fit:cover;border:1px solid var(--border);}
+.cover-img.portrait{aspect-ratio:3/4;}
+
+.blog-card{border:1px solid var(--border);padding:0;display:flex;flex-direction:column;transition:border-color .25s ease;}
+.blog-card:hover{border-color:var(--border-light);}
+.blog-card .bc-body{padding:22px;flex:1;display:flex;flex-direction:column;gap:10px;}
+.blog-card .bc-meta{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--accent-bright);text-transform:uppercase;}
+.blog-card h3{font-size:18px;}
+.blog-card p{color:var(--text-dim);font-size:13.5px;}
+.blog-card .bc-foot{font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);margin-top:auto;}
+
+.team-card{text-align:left;}
+.team-card h3{font-size:17px;margin-top:16px;}
+.team-card .role{font-family:var(--font-mono);font-size:11px;color:var(--accent-bright);letter-spacing:.06em;margin-top:4px;}
+.team-card .dept{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);letter-spacing:.1em;text-transform:uppercase;margin-top:8px;}
+.team-card p.bio{margin-top:12px;font-size:13px;color:var(--text-dim);}
+
+.wwd-item{padding:32px;}
+.wwd-item .wwd-num{font-family:var(--font-mono);color:var(--accent-bright);font-size:12px;margin-bottom:14px;}
+.wwd-item h3{font-size:19px;margin-bottom:10px;}
+.wwd-item p{color:var(--text-dim);font-size:14px;}
+
+
+.empty-state{border:1px dashed var(--border-light);padding:70px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.empty-state .eyebrow{margin-bottom:4px;}
+.empty-state h3{font-size:24px;text-transform:uppercase;}
+.empty-state p{color:var(--text-dim);max-width:420px;font-size:14px;}
+
+
+.field{margin-bottom:22px;}
+.field label{display:block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--bg-elevated);border:1px solid var(--border-light);color:var(--text);
+  padding:13px 14px;font-size:14px;border-radius:var(--radius);transition:border-color .2s;
+}
+.field input::placeholder,.field textarea::placeholder{color:var(--text-faint);}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent-bright);outline:none;}
+.field textarea{resize:vertical;min-height:100px;font-family:var(--font-body);}
+.field textarea.mono-area{font-family:var(--font-mono);font-size:12.5px;}
+.field-hint{font-size:11px;color:var(--text-faint);margin-top:6px;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media (max-width:640px){.form-row-2{grid-template-columns:1fr;}}
+
+
+.page-head{padding:160px 0 70px;border-bottom:1px solid var(--border);}
+.page-head h1{font-size:clamp(32px,5.4vw,58px);text-transform:uppercase;margin-top:16px;}
+.page-head p{color:var(--text-dim);max-width:520px;margin-top:16px;font-size:15px;}
+
+
+.site-footer{border-top:1px solid var(--border);padding:80px 0 0;margin-top:0;}
+.footer-inner{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;padding-bottom:56px;}
+.footer-col a{display:block;color:var(--text-dim);font-size:13.5px;padding:6px 0;transition:color .2s;}
+.footer-col a:hover{color:var(--text);}
+.footer-heading{font-size:10.5px;letter-spacing:.12em;color:var(--text-faint);margin-bottom:14px;}
+.footer-col p{color:var(--text-dim);font-size:13.5px;max-width:320px;margin:14px 0 20px;}
+.footer-bottom{display:flex;justify-content:space-between;padding:22px 0;border-top:1px solid var(--border);font-size:10.5px;color:var(--text-faint);letter-spacing:.06em;}
+@media (max-width:700px){.footer-inner{grid-template-columns:1fr;}.footer-bottom{flex-direction:column;gap:6px;}}
+
+
+.prose{max-width:720px;font-size:16px;line-height:1.8;color:#d8d3c8;}
+.prose h1,.prose h2,.prose h3{margin:36px 0 14px;text-transform:none;color:var(--text);}
+.prose p{margin-bottom:18px;color:#c8c3b8;}
+.prose ul,.prose ol{margin:0 0 18px 22px;color:#c8c3b8;}
+.prose li{margin-bottom:6px;}
+.prose a{color:var(--accent-bright);text-decoration:underline;text-underline-offset:3px;}
+.prose img{border:1px solid var(--border);margin:20px 0;}
+.prose code{font-family:var(--font-mono);background:var(--bg-elevated);padding:2px 6px;font-size:.9em;border:1px solid var(--border);}
+.prose pre{background:var(--bg-elevated);border:1px solid var(--border);padding:18px;overflow-x:auto;margin:20px 0;}
+.prose pre code{border:none;padding:0;}
+.prose blockquote{border-left:2px solid var(--accent);padding-left:18px;color:var(--text-dim);margin:20px 0;}
+
+.admin-shell{display:flex;min-height:100vh;padding-top:0;}
+.admin-sidebar{width:230px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg-alt);
+  position:sticky;top:0;height:100vh;padding:26px 0;display:flex;flex-direction:column;}
+.admin-brand{font-family:var(--font-mono);font-size:12.5px;letter-spacing:.1em;padding:0 24px 22px;border-bottom:1px solid var(--border);}
+.admin-brand small{display:block;color:var(--text-faint);font-size:9.5px;margin-top:4px;letter-spacing:.14em;}
+.admin-nav{padding:16px 0;flex:1;}
+.admin-nav a{display:block;padding:11px 24px;font-family:var(--font-mono);font-size:11.5px;letter-spacing:.06em;
+  color:var(--text-dim);border-left:2px solid transparent;text-transform:uppercase;}
+.admin-nav a:hover{color:var(--text);background:rgba(255,255,255,.02);}
+.admin-nav a.active{color:var(--text);border-left-color:var(--accent-bright);background:rgba(255,255,255,.02);}
+.admin-nav .divider{margin:14px 24px;}
+.admin-foot{padding:16px 24px;border-top:1px solid var(--border);}
+.admin-foot .user-email{font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:10px;word-break:break-all;}
+.admin-main{flex:1;padding:44px 48px;max-width:1100px;}
+.admin-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:34px;flex-wrap:wrap;gap:16px;}
+.admin-topbar h1{font-size:26px;text-transform:uppercase;}
+.admin-form{max-width:680px;}
+.form-actions{display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+.admin-table{width:100%;border-collapse:collapse;border:1px solid var(--border);}
+.admin-table th{text-align:left;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-faint);padding:12px 16px;border-bottom:1px solid var(--border-light);background:var(--bg-alt);}
+.admin-table td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13.5px;color:var(--text-dim);}
+.admin-table tr:hover td{background:rgba(255,255,255,.015);color:var(--text);}
+.admin-row-actions{display:flex;gap:14px;white-space:nowrap;}
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:44px;}
+.stat-card{background:var(--bg);padding:26px 22px;}
+.stat-card .stat-num{font-family:var(--font-display);font-size:38px;color:var(--text);font-weight:300;}
+.stat-card .stat-lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;margin-top:8px;}
+.activity-list{border:1px solid var(--border);}
+.activity-row{display:flex;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);font-size:13.5px;}
+.activity-row:last-child{border-bottom:none;}
+.activity-row .act-time{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);}
+@media (max-width:1000px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .admin-shell{flex-direction:column;}
+  .admin-sidebar{width:100%;height:auto;position:relative;flex-direction:row;align-items:center;overflow-x:auto;padding:14px 0;}
+  .admin-brand{border-bottom:none;border-right:1px solid var(--border);padding:0 18px;flex-shrink:0;}
+  .admin-nav{display:flex;padding:0;}
+  .admin-nav a{padding:10px 14px;border-left:none;border-bottom:2px solid transparent;white-space:nowrap;}
+  .admin-nav a.active{border-left:none;border-bottom-color:var(--accent-bright);}
+  .admin-nav .divider{display:none;}
+  .admin-foot{display:none;}
+  .admin-main{padding:28px 20px;}
+}
+
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;padding:24px;}
+.login-box{max-width:400px;width:100%;border:1px solid var(--border-light);background:var(--bg-alt);padding:44px 36px;position:relative;z-index:2;}
+.login-box h1{font-size:24px;text-transform:uppercase;margin:12px 0 30px;}
+.login-error{color:var(--accent-bright);font-size:12.5px;font-family:var(--font-mono);margin-bottom:16px;min-height:0;}
+.login-note{font-size:11.5px;color:var(--text-faint);margin-top:24px;line-height:1.6;border-top:1px solid var(--border);padding-top:18px;}
+
+#toast-root{position:fixed;bottom:24px;right:24px;z-index:500;display:flex;flex-direction:column;gap:10px;}
+.toast{background:var(--bg-elevated);border:1px solid var(--border-light);border-left:2px solid var(--accent-bright);
+  padding:14px 18px;font-family:var(--font-mono);font-size:12px;color:var(--text);animation:toastIn .3s ease;max-width:300px;}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.page-fade{animation:pageIn .45s ease both;}
+@keyframes pageIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+
+.blockchain-demo-section{
+  border-top:1px solid var(--border);
+  padding-top:8px;
+}
+.blockchain-demo-section .section-copy,
+.blockchain-demo-intro{
+  max-width:620px;
+}
+@media (max-width:800px){
+  .blockchain-demo{grid-template-columns:1fr;}
+}
+
+
+#page-transition{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  pointer-events:none;
+  visibility:hidden;
+  display:grid;
+  place-items:center;
+  background:rgba(7,7,7,.94);
+}
+#page-transition .transition-art{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(520px,86vw);
+  min-height:150px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  white-space:pre;
+  color:#900c20;
+  font-family:var(--font-mono);
+  font-size:clamp(11px,1.5vw,15px);
+  line-height:1.25;
+  letter-spacing:.04em;
+  text-shadow:0 0 16px rgba(208,43,68,.8);
+  opacity:0;
+}
+#page-transition .transition-label{
+  position:absolute;
+  left:50%;
+  top:calc(50% + 115px);
+  transform:translateX(-50%);
+  color:#e8e4dc;
+  font-family:var(--font-mono);
+  font-size:10px;
+  letter-spacing:.2em;
+  white-space:nowrap;
+  opacity:0;
+}
+#page-transition.active{
+  visibility:visible;
+  animation:transitionIn .18s ease-out both;
+}
+#page-transition.active .transition-art{
+  animation:asciiBuild .58s cubic-bezier(.2,.75,.25,1) both;
+}
+#page-transition.active .transition-label{
+  animation:transitionLabel .45s ease .18s both;
+}
+#page-transition.reveal{
+  visibility:visible;
+  animation:transitionOut .42s ease .02s both;
+}
+@keyframes transitionIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes transitionOut{
+  from{opacity:1}
+  to{opacity:0;visibility:hidden}
+}
+@keyframes asciiBuild{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.78);filter:blur(5px)}
+  45%{opacity:1;transform:translate(-50%,-50%) scale(1.02);filter:blur(0)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes transitionLabel{
+  from{opacity:0;transform:translateX(-50%) translateY(5px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}
+}
+
+.challenge-section{padding:70px 0 90px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.challenge-header{display:flex;justify-content:space-between;gap:30px;align-items:flex-end;margin-bottom:28px;}
+.challenge-header h2{margin:8px 0 10px;}
+.challenge-score{font-size:12px;color:var(--text-dim);white-space:nowrap;}
+.challenge-score span{font-size:28px;color:var(--accent-bright);}
+.challenge-card{border:1px solid var(--border-light);background:rgba(255,255,255,.015);padding:28px;position:relative;overflow:hidden;}
+.challenge-card::before{content:'';position:absolute;left:0;top:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.8;}
+.challenge-top{display:flex;justify-content:space-between;color:var(--text-faint);font-size:10px;letter-spacing:.14em;}
+.challenge-prompt{font-size:20px;line-height:1.5;max-width:820px;margin:34px 0;}
+.challenge-actions{display:flex;gap:12px;flex-wrap:wrap;}
+.challenge-feedback{min-height:18px;margin-top:18px;font-size:10px;letter-spacing:.12em;color:var(--text-dim);}
+@media (max-width:700px){.challenge-header{align-items:flex-start;flex-direction:column;}.challenge-prompt{font-size:17px;}.challenge-card{padding:22px;}}
+
+.calendar-section{
+  padding-top:80px;
+}
+
+.calendar{
+  max-width:900px;
+  margin:0 auto;
+  border:1px solid var(--border);
+  background:var(--bg-alt);
+}
+
+.calendar-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:26px 30px;
+  border-bottom:1px solid var(--border);
+}
+
+.calendar-header > div{
+  text-align:center;
+}
+
+.calendar-month{
+  font-family:var(--font-display);
+  font-size:24px;
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:.02em;
+}
+
+.calendar-year{
+  margin-top:4px;
+  color:var(--text-faint);
+  font-size:10px;
+  letter-spacing:.14em;
+}
+
+.calendar-nav{
+  width:40px;
+  height:40px;
+  border:1px solid var(--border-light);
+  background:transparent;
+  color:var(--text-dim);
+  font-size:16px;
+  transition:
+    border-color .2s ease,
+    color .2s ease,
+    background .2s ease;
+}
+
+.calendar-nav:hover{
+  color:var(--text);
+  border-color:var(--accent);
+  background:var(--accent-dim);
+}
+
+.calendar-weekdays,
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+}
+
+.calendar-weekdays{
+  border-bottom:1px solid var(--border);
+}
+
+.calendar-weekdays div{
+  padding:14px 10px;
+  text-align:center;
+  color:var(--text-faint);
+  font-size:9px;
+  letter-spacing:.1em;
+}
+
+.calendar-day{
+  min-height:100px;
+  padding:12px;
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  color:var(--text-dim);
+  position:relative;
+  transition:
+    background .2s ease,
+    color .2s ease;
+}
+
+.calendar-day:nth-child(7n){
+  border-right:none;
+}
+
+.calendar-day:hover{
+  background:rgba(255,255,255,.018);
+  color:var(--text);
+}
+
+.calendar-day.empty{
+  background:rgba(255,255,255,.008);
+}
+
+.calendar-number{
+  font-family:var(--font-mono);
+  font-size:11px;
+}
+
+.calendar-day.today .calendar-number{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  background:var(--accent);
+  color:#fff;
+}
+
+.calendar-empty{
+  max-width:900px;
+  margin:48px auto 0;
+  padding:30px 0;
+  border-top:1px solid var(--border);
+}
+
+.calendar-empty h3{
+  margin-top:12px;
+  font-size:20px;
+}
+
+.calendar-empty p{
+  margin-top:8px;
+  color:var(--text-dim);
+  font-size:14px;
+}
+
+@media(max-width:700px){
+
+  .calendar-header{
+    padding:20px;
+  }
+
+  .calendar-month{
+    font-size:20px;
+  }
+
+  .calendar-day{
+    min-height:70px;
+    padding:8px;
+  }
+
+  .calendar-weekdays div{
+    padding:10px 4px;
+    font-size:8px;
+  }
+
+}
+
+
+#security-loader{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:#070707;
+  color:#f1ece1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  font-family:var(--font-mono);
+  transition:opacity .7s ease, visibility .7s ease;
+}
+
+#security-loader.hidden{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+
+#security-loader::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
+  pointer-events:none;
+}
+
+#security-loader::after{
+  content:"";
+  position:absolute;
+  width:70vw;
+  height:70vw;
+  max-width:900px;
+  max-height:900px;
+  border:1px solid rgba(208,43,68,.8);
+  border-radius:50%;
+  animation:loaderOrbit 8s linear infinite;
+  pointer-events:none;
+}
+
+.security-loader-inner{
+  position:relative;
+  z-index:2;
+  width:min(620px, calc(100% - 48px));
+}
+
+.security-loader-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:55px;
+  font-size:10px;
+  letter-spacing:.16em;
+  color:#66645f;
+}
+
+.security-loader-status{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.security-loader-dot{
+  width:6px;
+  height:6px;
+  background:#900c20;
+  border-radius:50%;
+  box-shadow:0 0 12px rgba(208,43,68,.8);
+  animation:loaderPulse 1s ease-in-out infinite;
+}
+
+.security-loader-brand{
+  text-align:center;
+  margin-bottom:42px;
+}
+
+.security-loader-brand-title{
+  font-family:var(--font-display);
+  font-size:clamp(34px, 7vw, 68px);
+  font-weight:500;
+  letter-spacing:-.05em;
+  line-height:1;
+  margin-bottom:14px;
+  animation:loaderGlitch 2.5s infinite;
+}
+
+.security-loader-subtitle{
+  color:#77746e;
+  font-size:11px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+}
+
+.security-loader-terminal{
+  border:1px solid #222;
+  background:rgba(10,10,10,.82);
+  padding:24px;
+  position:relative;
+  box-shadow:
+    0 0 60px rgba(0,0,0,.45),
+    inset 0 0 40px rgba(181,5,28,.025);
+}
+
+.security-loader-terminal::before{
+  content:"SECURITY BOOT SEQUENCE";
+  position:absolute;
+  top:-8px;
+  left:16px;
+  padding:0 8px;
+  background:#070707;
+  color:#55534f;
+  font-size:9px;
+  letter-spacing:.18em;
+}
+
+.security-loader-line{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-height:27px;
+  font-size:11px;
+  letter-spacing:.05em;
+  color:#77746e;
+}
+
+.security-loader-line .check{
+  color:#900c20;
+  width:14px;
+  opacity:0;
+  transition:opacity .2s ease;
+}
+
+.security-loader-line.active{
+  color:#e5e1d8;
+}
+
+.security-loader-line.active .check{
+  opacity:1;
+}
+
+.security-loader-line.done{
+  color:#8f8d87;
+}
+
+.security-loader-progress{
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1px solid #202020;
+}
+
+.security-loader-progress-top{
+  display:flex;
+  justify-content:space-between;
+  font-size:9px;
+  letter-spacing:.14em;
+  color:#55534f;
+  margin-bottom:9px;
+}
+
+.security-loader-bar{
+  height:2px;
+  width:100%;
+  background:#1b1b1b;
+  overflow:hidden;
+}
+
+.security-loader-bar-fill{
+  height:100%;
+  width:0%;
+  background:#900c20;
+  box-shadow:0 0 14px rgba(208,43,68,.8);
+  transition:width .35s cubic-bezier(.22,1,.36,1);
+}
+
+.security-loader-access{
+  text-align:center;
+  margin-top:30px;
+  height:25px;
+  font-size:11px;
+  letter-spacing:.28em;
+  color:#900c20;
+  opacity:0;
+  transform:translateY(5px);
+  transition:opacity .4s ease, transform .4s ease;
+}
+
+.security-loader-access.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.security-loader-corner{
+  position:absolute;
+  width:28px;
+  height:28px;
+  border-color:#383532;
+  border-style:solid;
+}
+
+.security-loader-corner.tl{
+  top:12px;
+  left:12px;
+  border-width:1px 0 0 1px;
+}
+
+.security-loader-corner.tr{
+  top:12px;
+  right:12px;
+  border-width:1px 1px 0 0;
+}
+
+.security-loader-corner.bl{
+  bottom:12px;
+  left:12px;
+  border-width:0 0 1px 1px;
+}
+
+.security-loader-corner.br{
+  bottom:12px;
+  right:12px;
+  border-width:0 1px 1px 0;
+}
+
+@keyframes loaderPulse{
+  0%,100%{opacity:.35;transform:scale(.8);}
+  50%{opacity:1;transform:scale(1);}
+}
+
+@keyframes loaderOrbit{
+  from{transform:rotate(0deg) scale(1);}
+  to{transform:rotate(360deg) scale(1);}
+}
+
+@keyframes loaderGlitch{
+  0%,90%,100%{
+    transform:none;
+    text-shadow:none;
+  }
+  92%{
+    transform:translateX(2px);
+    text-shadow:-2px 0 #900c20;
+  }
+  94%{
+    transform:translateX(-2px);
+    text-shadow:2px 0 #900c20;
+  }
+  96%{
+    transform:none;
+    text-shadow:none;
+  }
+}
+
+@media(max-width:600px){
+  .security-loader-terminal{
+    padding:20px 16px;
+  }
+
+  .security-loader-line{
+    font-size:9px;
+  }
+
+  .security-loader-top{
+    margin-bottom:40px;
+  }
+}
+
+.ascii-transition{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  opacity:0;
+  visibility:hidden;
+  background:rgba(7,7,7,.91);
+  transition:opacity 1.25s cubic-bezier(.22,1,.36,1),visibility 1.25s ease;
+}
+.ascii-transition.active{opacity:1;visibility:visible;pointer-events:auto}
+.ascii-transition pre{
+  margin:0;
+  color:rgba(241,236,225,.30);
+  font:12px/1.12 "Courier New",monospace;
+  letter-spacing:.04em;
+  text-align:center;
+  text-shadow:0 0 18px rgba(208,43,68,.28);
+  white-space:pre;
+}
+.ascii-transition .transition-label{
+  margin-top:18px;
+  color:rgba(241,236,225,.23);
+  font:10px/1 "Courier New",monospace;
+  letter-spacing:.2em;
+}
+
+
+.hero-title-frame{position:relative;width:min(920px,100%);margin:0 auto 26px;padding:16px 20px 13px;}
+.hero-title-frame::before,.hero-title-frame::after{
+  content:"";position:absolute;left:3%;right:3%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35) 20%,rgba(208,43,68,.8) 50%,rgba(255,255,255,.35) 80%,transparent);
+  opacity:.75;
+}
+.hero-title-frame::before{top:0}.hero-title-frame::after{bottom:0}
+.hero-title-frame .hero-title{margin:0;position:relative;z-index:2;text-align:center;text-shadow:0 0 34px rgba(208,43,68,.18);}
+.symbol-field{
+  position:absolute;left:6%;right:6%;display:flex;justify-content:space-between;
+  white-space:nowrap;overflow:hidden;pointer-events:none;
+  color:rgba(238,234,226,.72);font-size:10px;letter-spacing:.25em;
+}
+.symbol-field-top{top:2px}
+.symbol-field-bottom{bottom:3px}
+.symbol-field span,.symbol-field b{color:rgba(208,43,68,.8);font-weight:400;}
+.symbol-field-top{animation:symbolDrift 7s ease-in-out infinite}
+.symbol-field-bottom{animation:symbolDriftReverse 8s ease-in-out infinite}
+@keyframes symbolDrift{
+  0%,100%{transform:translateX(0);opacity:.62}
+  50%{transform:translateX(10px);opacity:.9}
+}
+@keyframes symbolDriftReverse{
+  0%,100%{transform:translateX(0);opacity:.55}
+  50%{transform:translateX(-10px);opacity:.85}
+}
+
+
+/* =========================================================
+   HOMEPAGE REDESIGN
+   ========================================================= */
+
+.blockchain-home-hero{
+  position:relative;
+  min-height:calc(100vh - 74px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  isolation:isolate;
+}
+
+.blockchain-home-inner{
+  position:relative;
+  z-index:5;
+  width:100%;
+}
+
+.home-copy{
+  position:relative;
+  z-index:8;
+  max-width:1280px;
+  margin:0 auto;
+  text-align:center;
+}
+
+.home-eyebrow{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:28px;
+  color:var(--text-dim);
+  letter-spacing:.22em;
+}
+
+.eyebrow-dot{
+  width:8px;
+  height:8px;
+  display:inline-block;
+  background:var(--accent-bright);
+  flex:0 0 auto;
+}
+
+.blockchain-home-title{
+  position:relative;
+  z-index:10;
+  margin:0 0 26px;
+  font-family:var(--font-display);
+  font-size:clamp(52px,7.6vw,112px);
+  line-height:.92;
+  letter-spacing:-.045em;
+  font-weight:600;
+  color:#f4f0e8;
+  white-space:nowrap;
+  text-shadow:0 0 34px rgba(208,43,68,.13);
+}
+
+.home-copy .hero-desc{
+  max-width:1040px;
+  margin:0 auto 34px;
+  color:var(--text-dim);
+  font-size:clamp(16px,1.35vw,20px);
+  line-height:1.75;
+}
+
+.home-symbol-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index:1;
+}
+
+.games-home-section{
+  border-top:1px solid var(--border);
+}
+
+.games-home-grid{
+  display:grid;
+  grid-template-columns:minmax(300px,.75fr) minmax(420px,1.25fr);
+  gap:70px;
+  align-items:center;
+}
+
+.games-home-heading{
+  display:block;
+}
+
+.games-home-copy h2{
+  font-size:clamp(38px,4.8vw,66px);
+  line-height:.95;
+  margin:10px 0 18px;
+}
+
+.home-about-head{
+  align-items:flex-start;
+}
+
+
+
+.games-empty-admin{
+  min-height:360px;
+  border:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  padding:50px;
+  background:rgba(255,255,255,.012);
+}
+
+.games-empty-admin h2{
+  font-size:clamp(34px,5vw,64px);
+  margin:12px 0 18px;
+}
+
+@media(max-width:850px){
+  .blockchain-home-title{
+    font-size:clamp(42px,10vw,76px);
+    white-space:normal;
+  }
+
+  .games-home-grid{
+    grid-template-columns:1fr;
+    gap:42px;
+  }
+}
+
+@media(max-width:600px){
+  .home-eyebrow{margin-bottom:28px;}
+
+  .blockchain-home-title{margin-bottom:30px;}
+
+  .home-copy .hero-desc{
+    font-size:15px;
+    line-height:1.7;
+  }
+
+  .games-empty-admin{
+    min-height:280px;
+    padding:28px;
+  }
+}
+
+.games-home-section{
+  border-top:1px solid var(--border);
+}
+
+.games-home-grid{
+  display:grid;
+  grid-template-columns:minmax(300px,.9fr) minmax(420px,1.1fr);
+  gap:64px;
+  align-items:center;
+}
+
+.games-home-heading{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:28px;
+  align-items:start;
+}
+
+.games-home-copy h2{
+  font-size:clamp(32px,4vw,58px);
+  line-height:1;
+  margin:10px 0 18px;
+}
+
+ .packet-game-instruction{
+  margin:18px 0 18px;
+  color:var(--text-dim);
+  font-size:13px;
+  line-height:1.65;
+  max-width:620px;
+}
+
+.packet-game-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:14px;
+  color:var(--text-faint);
+  font-size:9px;
+  letter-spacing:.1em;
+}
+
+.packet-game-list{
+  display:grid;
+  gap:7px;
+  margin:16px 0 20px;
+}
+
+.packet-game-row{
+  width:100%;
+  display:grid;
+  grid-template-columns:74px 1fr 72px 82px;
+  gap:10px;
+  align-items:center;
+  padding:11px 12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.012);
+  color:var(--text-dim);
+  text-align:left;
+  font-family:var(--font-mono);
+  font-size:10px;
+  cursor:pointer;
+  transition:border-color .2s ease,background .2s ease,transform .2s ease;
+}
+
+.packet-game-row:hover{
+  border-color:rgba(241,236,225,.28);
+  transform:translateX(3px);
+}
+
+.packet-game-row.selected{
+  border-color:rgba(208,43,68,.72);
+  background:rgba(144,12,32,.09);
+  color:var(--text);
+}
+
+.packet-game-row.reveal-threat{
+  border-color:rgba(208,43,68,.6);
+  background:rgba(144,12,32,.12);
+}
+
+.packet-game-row.reveal-safe{
+  opacity:.58;
+}
+
+.packet-game-check{
+  width:12px;
+  height:12px;
+  border:1px solid rgba(241,236,225,.28);
+  display:inline-block;
+  margin-right:7px;
+  vertical-align:-2px;
+}
+
+.packet-game-row.selected .packet-game-check{
+  background:var(--accent);
+  border-color:var(--accent-bright);
+}
+
+.packet-game-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.packet-game-actions .btn{
+  font-size:10px;
+}
+
+.packet-game-feedback{
+  min-height:18px;
+  margin-top:14px;
+  color:var(--text-faint);
+  font-size:9px;
+  letter-spacing:.08em;
+}
+
+.packet-game-feedback.good{color:rgba(210,220,210,.85);}
+.packet-game-feedback.bad{color:rgba(208,43,68,.85);}
+
+.packet-panic-home{
+  display:block;
+  border:1px solid var(--border-light);
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.025),transparent 55%),
+    var(--bg-alt);
+  padding:24px;
+  min-height:300px;
+  transition:
+    transform .45s cubic-bezier(.22,1,.36,1),
+    border-color .45s ease,
+    background .45s ease;
+}
+
+.packet-panic-home:hover{
+  border-color:rgba(144,12,32,.65);
+  background:
+    linear-gradient(135deg,rgba(144,12,32,.06),transparent 60%),
+    var(--bg-alt);
+}
+
+.packet-panic-top,
+.packet-panic-bottom{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.packet-panic-top{
+  padding-bottom:18px;
+  border-bottom:1px solid var(--border);
+  font-size:11px;
+  letter-spacing:.1em;
+}
+
+.packet-panic-status{
+  color:var(--text-faint);
+  font-size:9px;
+}
+
+.packet-panic-terminal{
+  display:grid;
+  gap:8px;
+  margin:24px 0;
+}
+
+.packet-panic-line{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  align-items:center;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.012);
+  color:var(--text-faint);
+  font-size:10px;
+  transition:transform .3s ease, background .3s ease;
+}
+
+.packet-panic-line:hover{
+  transform:translateX(5px);
+  background:rgba(255,255,255,.025);
+}
+
+.packet-panic-line span:last-child{
+  text-align:right;
+}
+
+.packet-panic-line.threat span:last-child{
+  color:rgba(208,43,68,.72);
+}
+
+.packet-safe{
+  color:rgba(241,236,225,.42);
+}
+
+.packet-panic-bottom{
+  padding-top:17px;
+  border-top:1px solid var(--border);
+  color:var(--text-dim);
+  font-size:9px;
+  letter-spacing:.12em;
+}
+
+.packet-arrow{
+  font-size:17px;
+  transition:transform .3s ease;
+}
+
+.packet-panic-home:hover .packet-arrow{
+  transform:translateX(6px);
+}
+
+@media(max-width:850px){
+  .blockchain-title-wrap{
+    padding:70px 45px;
+  }
+
+  .blockchain-home-title{
+    font-size:clamp(40px, 10vw, 76px);
+    white-space:normal;
+  }
+
+  .title-symbol{
+    display:none;
+  }
+
+  .games-home-grid{
+    grid-template-columns:1fr;
+    gap:42px;
+  }
+}
+
+@media(max-width:600px){
+  .blockchain-home-hero{
+    min-height:75vh;
+  }
+
+  .blockchain-title-wrap{
+    padding:60px 20px;
+    min-height:280px;
+  }
+
+  .home-symbol{
+    font-size:16px;
+  }
+
+  .games-home-heading{
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+
+  .games-home-copy h2{
+    font-size:38px;
+  }
+
+  .packet-panic-home{
+    min-height:270px;
+    padding:18px;
+  }
+}
+
+
+/* --- Hero title: restore the previous visual weight --- */
+.blockchain-home-title{
+  position:relative;
+  z-index:10;
+  margin:14px 0 0;
+  text-align:center;
+  font-family:var(--font-display);
+  font-size:clamp(38px,7.2vw,84px);
+  text-transform:uppercase;
+  line-height:.98;
+  letter-spacing:-.01em;
+  font-weight:500;
+  color:var(--text);
+  text-shadow:0 0 34px rgba(208,43,68,.14);
+  white-space:nowrap;
+}
+
+.blockchain-home-title::after{
+  content:"";
+  position:absolute;
+  left:-10%;
+  top:8%;
+  width:120%;
+  height:72%;
+  background:radial-gradient(
+    ellipse,
+    rgba(144,12,32,.12),
+    transparent 68%
+  );
+  filter:blur(20px);
+  z-index:-1;
+  pointer-events:none;
+}
+
+.blockchain-title-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:min(1200px,100%);
+  min-height:420px;
+  padding:80px 30px;
+}
+
+.home-symbol-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:2;
+  pointer-events:none;
+  opacity:1;
+}
+
+.title-symbol{
+  display:none;
+}
+
+@media(max-width:700px){
+  .blockchain-home-title{
+    font-size:clamp(40px,10vw,70px);
+    white-space:normal;
+  }
+}
+
+
+/* =========================================================
+   PAGE HEADINGS — NUMBER ON PAGE, NOT NAV
+   ========================================================= */
+
+.page-head{
+  padding:150px 0 78px;
+  border-bottom:1px solid var(--border);
+}
+
+.page-head .eyebrow{
+  font-size:11px;
+  letter-spacing:.20em;
+  color:rgba(241,236,225,.54);
+}
+
+.page-head .eyebrow::before{
+  width:9px;
+  height:9px;
+  background:var(--accent);
+  box-shadow:none;
+}
+
+.page-head h1{
+  margin-top:76px;
+  font-family:var(--font-display);
+  font-size:clamp(72px,11vw,154px);
+  line-height:.82;
+  letter-spacing:-.055em;
+  font-weight:500;
+  text-transform:uppercase;
+  color:var(--text);
+  max-width:1100px;
+}
+
+.page-head p{
+  margin-top:34px;
+  max-width:560px;
+  font-size:14px;
+  line-height:1.65;
+  color:var(--text-dim);
+}
+
+@media(max-width:700px){
+  .page-head{
+    padding:120px 0 58px;
+  }
+
+  .page-head h1{
+    margin-top:52px;
+    font-size:clamp(54px,16vw,96px);
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div class="ascii-transition" id="ascii-transition" aria-hidden="true">
+  <div>
+    <pre id="ascii-art"></pre>
+    <div class="transition-label" id="ascii-label">LOADING</div>
+  </div>
+</div>
+
+
+<div id="security-loader">
+
+  <div class="security-loader-corner tl"></div>
+  <div class="security-loader-corner tr"></div>
+  <div class="security-loader-corner bl"></div>
+  <div class="security-loader-corner br"></div>
+
+  <div class="security-loader-inner">
+
+    <div class="security-loader-top">
+      <span>BLOCKCHAIN_CLUB // SECURE ACCESS</span>
+
+      <span class="security-loader-status">
+        <span class="security-loader-dot"></span>
+        SYSTEM BOOT
+      </span>
+    </div>
+
+    <div class="security-loader-brand">
+      <div class="security-loader-brand-title">
+        BLOCKCHAIN CLUB
+      </div>
+
+      <div class="security-loader-subtitle">
+        Initializing secure system
+      </div>
+    </div>
+
+    <div class="security-loader-terminal">
+
+      <div class="security-loader-line" data-step="0">
+        <span class="check">✓</span>
+        Establishing secure connection
+      </div>
+
+      <div class="security-loader-line" data-step="1">
+        <span class="check">✓</span>
+        Loading cryptographic modules
+      </div>
+
+      <div class="security-loader-line" data-step="2">
+        <span class="check">✓</span>
+        Verifying system integrity
+      </div>
+
+      <div class="security-loader-line" data-step="3">
+        <span class="check">✓</span>
+        Initializing blockchain network
+      </div>
+
+      <div class="security-loader-line" data-step="4">
+        <span class="check">✓</span>
+        Activating security protocols
+      </div>
+
+      <div class="security-loader-progress">
+
+        <div class="security-loader-progress-top">
+          <span>BOOT PROGRESS</span>
+          <span id="security-loader-percent">0%</span>
+        </div>
+
+        <div class="security-loader-bar">
+          <div
+            class="security-loader-bar-fill"
+            id="security-loader-fill">
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div
+      class="security-loader-access"
+      id="security-loader-access">
+      ACCESS GRANTED // SYSTEM SECURE
+    </div>
+
+  </div>
+
+</div>
+
+<div id="app"></div>
+<div id="toast-root"></div>
+
+<div id="page-transition" aria-hidden="true">
+  <div class="transition-art" id="transition-art"></div>
+  <div class="transition-label" id="transition-label"></div>
+</div>
+
+<div id="toast-root"></div>
+
+<script>
+
+const ASCII_TRANSITIONS = {
+  about: {
+    label: 'ABOUT',
+    art: [
+      '        /\\        ',
+      '       /  \\       ',
+      '      / /\\ \\      ',
+      '     / /  \\ \\     ',
+      '    /_/____\\_\\    ',
+      '       |  |       ',
+      '       |__|       '
+    ]
+  },
+  events: {
+    label: 'EVENTS',
+    art: [
+      '      o──────o     ',
+      '      │      │     ',
+      '  o───┘      └──o  ',
+      '  │              │ ',
+      '  └──────o───────┘ ',
+      '         │         ',
+      '         o         '
+    ]
+  },
+  games: {
+    label: 'GAMES',
+    art: [
+      '    ┌──────────┐   ',
+      '    │  ░░  ░░  │   ',
+      '    │    ╳     │   ',
+      '    │  ░░  ░░  │   ',
+      '    └────┬─────┘   ',
+      '         │         ',
+      '      ╱──┴──╲      '
+    ]
+  },
+  blogs: {
+    label: 'BLOGS',
+    art: [
+      '      ┌────────┐   ',
+      '      │▌       │   ',
+      '      │▌ ───── │   ',
+      '      │▌ ───── │   ',
+      '      │▌ ───── │   ',
+      '      │▌ ───── │   ',
+      '      └────────┘   '
+    ]
+  },
+  team: {
+    label: 'TEAM',
+    art: [
+      '        o          ',
+      '       /|\\         ',
+      '   o───┼───o       ',
+      '      /|\\          ',
+      '     / | \\         ',
+      '    o  |  o        ',
+      '       |           '
+    ]
+  },
+  admin: {
+    label: 'ADMIN',
+    art: [
+      '       .────.      ',
+      '      /  __  \\     ',
+      '     |  /  \\  |    ',
+      '     | | () | |    ',
+      '     |  \\__/  |    ',
+      '      \\      /     ',
+      '       `────`      '
+    ]
+  },
+  projects: {
+    label: 'PROJECTS',
+    art: [
+      '      ┌───────┐    ',
+      '      │ BLOCK │    ',
+      '  ┌───┴───────┴──┐ ',
+      '  │   HASH: 7A   │ ',
+      '  └───┬───────┬──┘ ',
+      '      │       │    ',
+      '      o───────o    '
+    ]
+  }
+};
+
+function getTransitionKey(path){
+  const clean = String(path || '').replace(/^#\/?/, '').split('/')[0];
+  return ASCII_TRANSITIONS[clean] ? clean : 'games';
+}
+
+function runAsciiTransition(path, done){
+  const overlay = document.getElementById('ascii-transition');
+  const art = document.getElementById('ascii-art');
+  const label = document.getElementById('ascii-label');
+  if(!overlay || !art || !label){
+    if(done) done();
+    return;
+  }
+
+  const config = ASCII_TRANSITIONS[getTransitionKey(path)];
+  art.textContent = config.art.join('\n');
+  label.textContent = '→ ' + config.label + ' →';
+
+  overlay.classList.add('active');
+  overlay.setAttribute('aria-hidden','false');
+
+  setTimeout(() => {
+    if(done) done();
+  }, 1050);
+
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden','true');
+  }, 650);
+}
+
+
+
+const store = {
+  async get(key, shared = true){
+    try{
+      const r = await window.storage.get(key, shared);
+      return r ? JSON.parse(r.value) : null;
+    }catch(e){ return null; }
+  },
+  async set(key, value, shared = true){
+    try{ await window.storage.set(key, JSON.stringify(value), shared); return true; }
+    catch(e){ console.error('storage.set failed', e); return false; }
+  },
+  async remove(key, shared = true){
+    try{ await window.storage.delete(key, shared); return true; }
+    catch(e){ return false; }
+  }
+};
+
+function uid(){ return 'id_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function esc(str){
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtDate(ts){
+  if(!ts) return '—';
+  const d = typeof ts === 'number' ? new Date(ts) : new Date(ts);
+  if(isNaN(d.getTime())) return esc(ts);
+  return d.toLocaleDateString('en-US',{ day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
+}
+function showToast(msg){
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  el.className = 'toast mono';
+  el.textContent = msg;
+  root.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 2600);
+}
+function initBlockchainDemo(){
+
+  const chain = document.getElementById('demo-chain');
+  const button = document.getElementById('add-block-btn');
+  const fromInput = document.getElementById('tx-from');
+  const toInput = document.getElementById('tx-to');
+  const status = document.getElementById('blockchain-status');
+
+  if(!chain || !button) return;
+
+  let blockNumber = 0;
+
+  button.addEventListener('click', () => {
+
+    const from = fromInput.value.trim();
+    const to = toInput.value.trim();
+
+    if(!from || !to){
+
+      status.textContent =
+        'ENTER BOTH ADDRESSES';
+
+      return;
+    }
+
+    status.textContent =
+      'MINING BLOCK...';
+
+    button.disabled = true;
+
+    setTimeout(() => {
+
+      blockNumber++;
+
+      const block = document.createElement('div');
+
+      block.className = 'chain-block';
+
+      const fakeHash =
+        Math.random()
+          .toString(16)
+          .slice(2,6)
+          .toUpperCase();
+
+      block.innerHTML = `
+        <div class="block-top">
+          <span>BLOCK</span>
+          <span>#${String(blockNumber).padStart(2,'0')}</span>
+        </div>
+
+        <div class="block-line"></div>
+
+        <div class="block-data">
+          ${from} → ${to}
+        </div>
+
+        <div class="block-hash mono">
+          HASH: ${fakeHash}
+        </div>
+      `;
+
+      chain.appendChild(block);
+
+      status.textContent =
+        `✓ BLOCK #${String(blockNumber).padStart(2,'0')} CONFIRMED`;
+
+      fromInput.value = '';
+      toInput.value = '';
+
+      button.disabled = false;
+
+      block.scrollIntoView({
+        behavior:'smooth',
+        block:'nearest',
+        inline:'end'
+      });
+
+    }, 700);
+  });
+}
+
+const SEED_EVENTS = [];
+const CLUB_EVENTS = [];
+const SEED_PROJECTS = [
+  { id: uid(), title:'Campus Credential Ledger', description:'A permissioned ledger prototype for issuing and verifying tamper-evident academic credentials across departments.',
+    status:'active', year:'2026', teamMembers:'Ariana Kwan, Devon Marsh', links:'GitHub|https://github.com', image:'' , visibility:'published'},
+  { id: uid(), title:'Threat Intel Aggregator', description:'A pipeline that collects, normalizes, and scores open-source threat intelligence feeds for club research use.',
+    status:'active', year:'2026', teamMembers:'Priya Nandakumar', links:'', image:'', visibility:'published' },
+  { id: uid(), title:'Zero-Knowledge Attendance', description:'An experimental zero-knowledge proof system for verifying event attendance without exposing member identities.',
+    status:'planning', year:'2026', teamMembers:'Devon Marsh, Sam Okafor', links:'', image:'', visibility:'published' },
+  { id: uid(), title:'CTF Infrastructure Toolkit', description:'Reusable infrastructure-as-code for standing up capture-the-flag challenge environments quickly.',
+    status:'completed', year:'2025', teamMembers:'Priya Nandakumar, Ariana Kwan', links:'', image:'', visibility:'draft' },
+];
+const SEED_COURSES = [
+  { id: uid(), title:'Applied Cryptography Fundamentals', level:'Beginner', duration:'6 weeks', instructor:'Dr. Elena Vasquez',
+    description:'Core concepts in symmetric and asymmetric cryptography, hashing, and digital signatures, with practical exercises.',
+    registrationLink:'', status:'published' },
+  { id: uid(), title:'Smart Contract Development', level:'Intermediate', duration:'8 weeks', instructor:'Sam Okafor',
+    description:'Design, write, and test smart contracts, covering common patterns and known vulnerability classes.',
+    registrationLink:'', status:'published' },
+  { id: uid(), title:'Offensive Security Bootcamp', level:'Advanced', duration:'10 weeks', instructor:'Priya Nandakumar',
+    description:'A lab-driven course covering penetration testing methodology, exploitation, and reporting.',
+    registrationLink:'', status:'published' },
+];
+const SEED_TEAM = [
+  { id: uid(), name:'Ariana Kwan', role:'President', department:'Leadership', bio:'Final-year Computer Science student focused on distributed systems and protocol design.', email:'ariana@bcc-club.edu', image:'', linkedin:'', github:'', order:'1' },
+  { id: uid(), name:'Devon Marsh', role:'VP of Blockchain', department:'Blockchain', bio:'Researches consensus mechanisms and maintains the club\'s smart contract projects.', email:'devon@bcc-club.edu', image:'', linkedin:'', github:'', order:'2' },
+  { id: uid(), name:'Priya Nandakumar', role:'VP of Cybersecurity', department:'Cybersecurity', bio:'Runs the club\'s CTF program and leads offensive security workshops.', email:'priya@bcc-club.edu', image:'', linkedin:'', github:'', order:'3' },
+  { id: uid(), name:'Sam Okafor', role:'Technical Lead', department:'Blockchain', bio:'Builds and audits the club\'s smart contract and tooling projects.', email:'sam@bcc-club.edu', image:'', linkedin:'', github:'', order:'4' },
+  { id: uid(), name:'Elena Vasquez', role:'Faculty Advisor', department:'Leadership', bio:'Assistant professor advising the club on curriculum and applied research.', email:'evasquez@university.edu', image:'', linkedin:'', github:'', order:'5' },
+];
+const DEFAULT_HOMEPAGE = {
+  heroEyebrow: 'A UNIVERSITY STUDENT ORGANIZATION',
+  heroTitle: 'BLOCKCHAIN CLUB',
+  heroDescription: 'A student-run collective researching distributed systems, applied cryptography, and offensive & defensive security — through workshops, projects, and open research.',
+  ctaPrimary: 'Learn More', ctaPrimaryLink: '#/about',
+  ctaSecondary: 'Upcoming Events', ctaSecondaryLink: '#/events',
+  wwd1Title:'Research', wwd1Desc:'We study protocol design, cryptographic primitives, and emerging attack surfaces.',
+  wwd2Title:'Build', wwd2Desc:'Members ship real tooling and smart contract projects across the semester.',
+  wwd3Title:'Defend', wwd3Desc:'We run CTFs, audits, and workshops to sharpen offensive and defensive practice.'
+};
+const DEFAULT_ABOUT = {
+  mission: 'To build a rigorous, hands-on community where students study distributed systems and security as one connected discipline.',
+  vision: 'A campus where every student graduating in computing has practical fluency in both decentralized systems and applied security.',
+  description: 'The Blockchain Club is a student-run organization for undergraduates and graduate students studying distributed systems, applied cryptography, and offensive and defensive security. We host weekly workshops, run a capture-the-flag program, and maintain a portfolio of open research and tooling projects. Membership is open to all majors — no prior experience required, only curiosity and a willingness to build.',
+  foundedYear: '2021'
+};
+const DEFAULT_CONTACT = {
+  email: 'contact@bcc-club.edu',
+  location: 'Engineering Building, Room 214, University Campus',
+  twitter: '', github: '', linkedin: '', discord: ''
+};
+
+async function ensureSeed(){
+}
+
+
+function makeCollectionService(key){
+  return {
+    async getAll(){ return (await store.get(key)) || []; },
+    async getPublished(){ return (await this.getAll()).filter(i => i.status === 'published'); },
+    async getById(id){ return (await this.getAll()).find(i => i.id === id) || null; },
+    async create(data){
+      const list = await this.getAll();
+      const item = { ...data, id: uid(), status: data.status || 'draft', createdAt: Date.now(), updatedAt: Date.now() };
+      list.unshift(item);
+      await store.set(key, list);
+      return item;
+    },
+    async update(id, patch){
+      const list = await this.getAll();
+      const idx = list.findIndex(i => i.id === id);
+      if(idx === -1) return null;
+      list[idx] = { ...list[idx], ...patch, updatedAt: Date.now() };
+      await store.set(key, list);
+      return list[idx];
+    },
+    async delete(id){
+      const list = (await this.getAll()).filter(i => i.id !== id);
+      await store.set(key, list);
+      return true;
+    }
+  };
+}
+function makeSingletonService(key, defaults){
+  return {
+    async get(){ const v = await store.get(key); return v || defaults; },
+    async update(patch){
+      const current = await this.get();
+      const merged = { ...current, ...patch };
+      await store.set(key, merged);
+      return merged;
+    }
+  };
+}
+const blogService = makeCollectionService('bcc:blogs');
+const eventService = makeCollectionService('bcc:events');
+const projectService = makeCollectionService('bcc:projects');
+const courseService = makeCollectionService('bcc:courses');
+const teamService = makeCollectionService('bcc:team');
+const homepageService = makeSingletonService('bcc:content:homepage', DEFAULT_HOMEPAGE);
+const aboutService = makeSingletonService('bcc:content:about', DEFAULT_ABOUT);
+const contactService = makeSingletonService('bcc:content:contact', DEFAULT_CONTACT);
+const DEFAULT_GAMES = {
+  title: '',
+  description: '',
+  prototypeLink: ''
+};
+const gamesService = makeSingletonService('bcc:content:games', DEFAULT_GAMES);
+
+
+const authService = {
+  async login(email, password){
+    if(!email || !password) return { ok:false, error:'Email and password are required.' };
+    if(password.length < 4) return { ok:false, error:'Incorrect email or password.' };
+    await store.set('bcc:session', { email, loggedInAt: Date.now() }, false);
+    return { ok:true };
+  },
+  async logout(){ await store.remove('bcc:session', false); },
+  async isAuthenticated(){ return !!(await store.get('bcc:session', false)); },
+  async currentUser(){ return await store.get('bcc:session', false); }
+};
+const resourceConfigs = {
+  blogs: {
+    label:'Blogs', singular:'Blog Post', service: blogService,
+    listColumns:[['title','Title'],['author','Author'],['category','Category'],['status','Status'],['updatedAt','Updated']],
+    fields:[
+      {key:'title', label:'Title', type:'text', required:true},
+      {key:'author', label:'Author', type:'text', required:true},
+      {key:'category', label:'Category', type:'text', placeholder:'e.g. Research, Security, Events'},
+      {key:'coverImage', label:'Cover Image URL', type:'text', placeholder:'https://…'},
+      {key:'excerpt', label:'Short Description', type:'textarea'},
+      {key:'content', label:'Article Content', type:'markdown', hint:'Markdown supported — headings, lists, links, images, and ```code blocks```.'},
+    ]
+  },
+  events: {
+    label:'Events', singular:'Event', service: eventService,
+    listColumns:[['title','Title'],['type','Type'],['date','Date'],['status','Status']],
+    fields:[
+      {key:'title', label:'Title', type:'text', required:true},
+      {key:'type', label:'Event Type', type:'select', options:['Workshop','Hackathon','Talk','Meetup','CTF']},
+      {key:'date', label:'Date', type:'date'},
+      {key:'time', label:'Time', type:'text', placeholder:'18:00'},
+      {key:'location', label:'Location', type:'text'},
+      {key:'description', label:'Description', type:'textarea'},
+      {key:'registrationLink', label:'Registration Link', type:'text', placeholder:'https://…'},
+      {key:'image', label:'Image URL', type:'text', placeholder:'https://…'},
+    ]
+  },
+  projects: {
+    label:'Projects', singular:'Project', service: projectService,
+    listColumns:[['title','Title'],['status','Phase'],['year','Year'],['visibility','Status']],
+    fields:[
+      {key:'title', label:'Title', type:'text', required:true},
+      {key:'description', label:'Description', type:'textarea'},
+      {key:'status', label:'Phase', type:'select', options:['planning','active','completed']},
+      {key:'year', label:'Year', type:'text'},
+      {key:'teamMembers', label:'Team Members', type:'text', placeholder:'Comma separated names'},
+      {key:'links', label:'External Links', type:'text', placeholder:'Label|https://url, Label2|https://url2'},
+      {key:'image', label:'Image URL', type:'text', placeholder:'https://…'},
+    ],
+    statusField:'visibility'
+  },
+  courses: {
+    label:'Courses', singular:'Course', service: courseService,
+    listColumns:[['title','Title'],['level','Level'],['duration','Duration'],['status','Status']],
+    fields:[
+      {key:'title', label:'Title', type:'text', required:true},
+      {key:'level', label:'Level', type:'select', options:['Beginner','Intermediate','Advanced']},
+      {key:'duration', label:'Duration', type:'text', placeholder:'e.g. 6 weeks'},
+      {key:'instructor', label:'Instructor', type:'text'},
+      {key:'description', label:'Description', type:'textarea'},
+      {key:'registrationLink', label:'Registration Link', type:'text', placeholder:'https://…'},
+    ]
+  },
+  team: {
+    label:'Team', singular:'Team Member', service: teamService,
+    listColumns:[['name','Name'],['role','Role'],['department','Department'],['order','Order']],
+    fields:[
+      {key:'name', label:'Full Name', type:'text', required:true},
+      {key:'role', label:'Role', type:'text', required:true},
+      {key:'department', label:'Department', type:'select', options:['Leadership','Blockchain','Cybersecurity','Design','Operations']},
+      {key:'bio', label:'Bio', type:'textarea'},
+      {key:'email', label:'Email', type:'text'},
+      {key:'image', label:'Profile Image URL', type:'text', placeholder:'https://…'},
+      {key:'linkedin', label:'LinkedIn URL', type:'text'},
+      {key:'github', label:'GitHub URL', type:'text'},
+      {key:'order', label:'Display Order', type:'text', placeholder:'1'},
+    ],
+    noStatus:true
+  }
+};
+
+function compilePattern(pattern){
+  const paramNames = [];
+  const regexStr = '^' + pattern.replace(/:[^/]+/g, m => { paramNames.push(m.slice(1)); return '([^/]+)'; }) + '$';
+  return { regex: new RegExp(regexStr), paramNames };
+}
+const routes = [
+  { path:'/', view: HomePage },
+  { path:'/about', view: AboutPage },
+  { path:'/blogs', view: BlogsPage },
+  { path:'/blogs/:id', view: BlogDetailPage },
+  { path:'/events', view: EventsPage },
+  { path:'/projects', view: ProjectsPage },
+  { path:'/courses', view: CoursesPage },
+  { path:'/team', view: TeamPage },
+  { path:'/games', view: GamesPage },
+  { path:'/admin/login', view: AdminLoginPage, after: bindLoginForm, admin:true, skipGuard:true },
+  { path:'/admin/dashboard', view: AdminDashboardPage, admin:true, key:'dashboard' },
+  { path:'/admin/homepage', view: AdminHomepagePage, after: bindHomepageForm, admin:true, key:'homepage' },
+  { path:'/admin/about', view: AdminAboutPage, after: bindAboutForm, admin:true, key:'about' },
+  { path:'/admin/games', view: AdminGamesPage, after: bindGamesForm, admin:true, key:'games' },
+  ...Object.keys(resourceConfigs).flatMap(rk => ([
+    { path:`/admin/${rk}`, view: () => AdminResourceListPage(rk), admin:true, key:rk },
+    { path:`/admin/${rk}/new`, view: () => AdminResourceEditorPage(rk, null), after: () => bindResourceEditor(rk, null), admin:true, key:rk },
+    { path:`/admin/${rk}/edit/:id`, view: p => AdminResourceEditorPage(rk, p.id), after: p => bindResourceEditor(rk, p.id), admin:true, key:rk },
+  ]))
+];
+routes.forEach(r => Object.assign(r, compilePattern(r.path)));
+
+function parseHash(){
+  let h = location.hash.slice(1);
+  if(!h) h = '/';
+  if(h.length > 1 && h.endsWith('/')) h = h.slice(0, -1);
+  return h;
+}
+function matchRoute(path){
+  for(const route of routes){
+    const m = path.match(route.regex);
+    if(m){
+      const params = {};
+      route.paramNames.forEach((name,i) => params[name] = decodeURIComponent(m[i+1]));
+      return { route, params };
+    }
+  }
+  return null;
+}
+let calendarDate = new Date();
+
+function initCalendar(){
+
+  const monthEl = document.getElementById('calendar-month');
+  const yearEl = document.getElementById('calendar-year');
+  const gridEl = document.getElementById('calendar-grid');
+  const selectedDateEl =
+  document.getElementById('selected-date');
+
+const selectedMessageEl =
+  document.getElementById('selected-date-message');
+  const prevBtn = document.getElementById('calendar-prev');
+  const nextBtn = document.getElementById('calendar-next');
+
+  if(!monthEl || !yearEl || !gridEl) return;
+
+  function renderCalendar(){
+
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+
+    const monthName = calendarDate.toLocaleString('en-US', {
+      month:'long'
+    });
+
+    monthEl.textContent = monthName;
+    yearEl.textContent = year;
+
+    gridEl.innerHTML = '';
+
+    const firstDay = new Date(year, month, 1);
+
+    const startingDay = (firstDay.getDay() + 6) % 7;
+
+    const daysInMonth = new Date(
+      year,
+      month + 1,
+      0
+    ).getDate();
+
+    for(let i = 0; i < startingDay; i++){
+
+      const empty = document.createElement('div');
+
+      empty.className = 'calendar-day empty';
+
+      gridEl.appendChild(empty);
+    }
+
+    const today = new Date();
+
+    for(let day = 1; day <= daysInMonth; day++){
+
+      const cell = document.createElement('div');
+
+      cell.className = 'calendar-day';
+      cell.addEventListener('click', () => {
+
+  document
+    .querySelectorAll('.calendar-day.selected')
+    .forEach(dayCell => {
+      dayCell.classList.remove('selected');
+    });
+
+  cell.classList.add('selected');
+
+  const selectedDate =
+    new Date(year, month, day);
+
+  const formattedDate =
+    selectedDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+  selectedDateEl.textContent =
+    formattedDate;
+
+  const selectedEvents =
+  CLUB_EVENTS.filter(
+    event => event.date ===
+      `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  );
+
+if(selectedEvents.length === 0){
+
+  selectedMessageEl.textContent =
+    'No events scheduled for this date.';
+
+}else{
+
+  selectedMessageEl.innerHTML =
+    selectedEvents.map(event => `
+      <div class="selected-event">
+
+        <div class="selected-event-title">
+          ${event.title}
+        </div>
+
+        <div class="selected-event-meta mono">
+          ${event.time || ''}
+          ${event.venue ? ` · ${event.venue}` : ''}
+        </div>
+
+        ${
+          event.description
+            ? `<div class="selected-event-description">
+                ${event.description}
+              </div>`
+            : ''
+        }
+
+      </div>
+    `).join('');
+}
+});
+      const isToday =
+        day === today.getDate() &&
+        month === today.getMonth() &&
+        year === today.getFullYear();
+
+      if(isToday){
+        cell.classList.add('today');
+      }
+
+      const dateKey =
+  `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+const dayEvents = CLUB_EVENTS.filter(
+  event => event.date === dateKey
+);
+cell.innerHTML = `
+  <div class="calendar-number">
+    ${day}
+  </div>
+
+  ${
+    dayEvents.length
+      ? `<div class="calendar-event-dot"></div>`
+      : ''
+  }
+
+
+  <div class="calendar-events">
+    ${dayEvents.map(event => `
+      <div class="calendar-event">
+        ${event.title}
+      </div>
+    `).join('')}
+  </div>
+`;
+
+      gridEl.appendChild(cell);
+    }
+  }
+
+  prevBtn.addEventListener('click', () => {
+
+    calendarDate.setMonth(
+      calendarDate.getMonth() - 1
+    );
+
+    renderCalendar();
+
+  });
+
+  nextBtn.addEventListener('click', () => {
+
+    calendarDate.setMonth(
+      calendarDate.getMonth() + 1
+    );
+
+    renderCalendar();
+
+  });
+
+  renderCalendar();
+}
+let firstPageLoad = true;
+let transitionTimer = null;
+
+const TRANSITION_ART = {
+  home: `        ◦────────◦
+       /          \\
+      ◦            ◦
+       \\          /
+        ◦────────◦`,
+  about: `          ◦
+         / \\
+        ◦───◦
+         \\ /
+          ◦`,
+  events: `──────●────────●────────●──────
+      │          │          │
+     01         02         03`,
+  projects: `      ┌───────┐
+──────┤ 01    ├──────┐
+      └───────┘      │
+          │      ┌───▼───┐
+          └──────┤ BUILD │
+                 └───────┘`,
+  team: `          ●
+         / \\
+        ●   ●
+       / \\ / \\
+      ●   ●   ●`,
+  games: `      ┌───────────┐
+──────┤  GAMES    ├──────
+      └─────┬─────┘
+            │
+         ◉──┴──◉`,
+  blogs: `      ╭────────╮
+  ────┤ BLOGS  ├────
+      ╰───┬────╯
+          │
+       ───┴───`,
+  admin: `       ╱╲
+      ╱  ╲
+  ───╱────╲───
+    ╱  ██  ╲
+   ╱────────╲`,
+  lab: `      [HASH]
+         │
+    ┌────▼────┐
+    │  BLOCK  │
+    └────┬────┘
+         │
+      [CHAIN]`
+};
+
+function transitionKey(path){
+  const p = String(path || '/').replace(/^\//,'').split('/')[0].toLowerCase();
+  if(!p) return 'home';
+  if(p === 'admin') return 'lab';
+  return TRANSITION_ART[p] ? p : 'lab';
+}
+
+function startPageTransition(path){
+  if(firstPageLoad || path === '/') return;
+
+  const transition = document.getElementById('page-transition');
+  if(!transition) return;
+
+  const art = document.getElementById('transition-art');
+  const label = document.getElementById('transition-label');
+  const key = transitionKey(path);
+
+  if(art) art.textContent = TRANSITION_ART[key];
+  if(label){
+    const pageName = key.toUpperCase();
+    label.textContent = `BLOCKCHAIN CLUB // ${pageName}`;
+  }
+
+  transition.classList.remove('reveal');
+  void transition.offsetWidth;
+  transition.classList.add('active');
+
+  clearTimeout(transitionTimer);
+}
+
+function endPageTransition(){
+  const transition = document.getElementById('page-transition');
+  if(!transition || firstPageLoad) return;
+
+  transition.classList.remove('active');
+  transition.classList.add('reveal');
+
+  transitionTimer = setTimeout(() => {
+    transition.classList.remove('reveal');
+  }, 1200);
+}
+
+async function render(){
+  const path = parseHash();
+  startPageTransition(path);
+
+  const found = matchRoute(path);
+  const app = document.getElementById('app');
+  if(!found){
+    app.innerHTML = `<div class="page-fade">${NotFoundPage()}</div>`;
+    endPageTransition();
+    firstPageLoad = false;
+    return;
+  }
+
+  const { route, params } = found;
+  if(route.admin && !route.skipGuard){
+    const authed = await authService.isAuthenticated();
+    if(!authed){ location.hash = '#/admin/login'; return; }
+  }
+
+  let html;
+  try{ html = await route.view(params); }
+  catch(e){ console.error(e); html = NotFoundPage(); }
+
+  app.innerHTML = `<div class="page-fade">${html}</div>`;
+  window.scrollTo(0,0);
+
+  if(route.after) route.after(params);
+  initGlobalWidgets(path);
+  initHomeSymbolField();
+  initChallengeGame();
+
+  if(path === '/events'){
+    initCalendar();
+  }
+
+  if(!firstPageLoad && path !== '/'){
+    requestAnimationFrame(() => setTimeout(endPageTransition, 1350));
+  }
+
+  firstPageLoad = false;
+}
+window.addEventListener('hashchange', render);
+window.addEventListener('DOMContentLoaded', async () => { await ensureSeed(); await render(); });
+
+
+function NavBar(active){
+  const links = [
+  ['#/events','Events'],
+  ['#/games','Games'],
+  ['#/blogs','Blogs'],
+  ['#/team','Team'],
+  ['#/admin/login','Admin']
+];
+
+  return `
+    <header class="nav" id="site-nav">
+      <div class="container nav-inner">
+
+        <a href="#/" class="nav-logo" aria-label="Blockchain Club home">
+          <img src="logo.jpeg" alt="Blockchain Club logo">
+          <span class="brand-name">Blockchain Club</span>
+        </a>
+
+        <nav class="nav-links">
+          ${links.map(([href,label]) =>
+            `<a href="${href}" class="nav-link mono ${active===href?'active':''}">
+              ${label}
+            </a>`
+          ).join('')}
+        </nav>
+
+        <button
+          class="nav-toggle"
+          data-action="mobile-menu-toggle"
+          aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+      </div>
+    </header>
+  `;
+}
+function PageHead(eyebrow, title, desc){
+  return `<div class="page-head">
+    <div class="container">
+      <div class="eyebrow mono">${esc(eyebrow)}</div>
+      <h1>${esc(title)}</h1>
+      ${desc ? `<p>${esc(desc)}</p>` : ''}
+    </div>
+  </div>`;
+}
+function EmptyState({eyebrow, title, msg, ctaText, ctaHref}){
+  return `<div class="empty-state">
+    ${eyebrow ? `<div class="eyebrow mono">${esc(eyebrow)}</div>` : ''}
+    <h3>${esc(title)}</h3>
+    <p>${esc(msg)}</p>
+    ${ctaText ? `<a href="${ctaHref}" class="btn btn-outline" style="margin-top:8px;">${esc(ctaText)}</a>` : ''}
+  </div>`;
+}
+function ImgOrPlaceholder(url, alt, portrait){
+  if(url) return `<img src="${esc(url)}" alt="${esc(alt||'')}" class="cover-img ${portrait?'portrait':''}" loading="lazy">`;
+  return `<div class="img-placeholder ${portrait?'portrait':''}"></div>`;
+}
+function NotFoundPage(){
+  return `${NavBar('')}<div class="container not-found"><div class="mono eyebrow">404 / NOT FOUND</div><h1>PAGE NOT FOUND</h1>
+    <p class="text-dim" style="margin-top:16px;">The page you're looking for doesn't exist.</p>
+    <a href="#/" class="btn btn-outline" style="margin-top:28px;">Return Home</a></div>`;
+}
+
+async function HomePage(){
+  const events = await eventService.getPublished();
+  const upcomingEvents = events.slice(0,3);
+
+  return `
+  ${NavBar('#/')}
+
+  <section class="hero blockchain-home-hero" id="hero">
+    <canvas class="home-symbol-canvas" id="home-symbol-canvas" aria-hidden="true"></canvas>
+
+    <div class="container blockchain-home-inner">
+      <div class="home-copy">
+        <div class="eyebrow mono home-eyebrow">
+          <span class="eyebrow-dot"></span>
+          A UNIVERSITY STUDENT ORGANIZATION
+        </div>
+
+        <h1 class="blockchain-home-title">BLOCKCHAIN CLUB</h1>
+
+        <p class="hero-desc">
+          A student-run collective researching distributed systems, applied
+          cryptography, and offensive &amp; defensive security — through
+          workshops, projects, and open research.
+        </p>
+
+        <div class="hero-cta">
+          <a href="#/about" class="btn btn-primary">LEARN MORE</a>
+          <a href="#/events" class="btn btn-outline">UPCOMING EVENTS</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section games-home-section" id="games-preview">
+    <div class="container">
+      <div class="games-home-grid">
+
+        <div class="games-home-heading">
+          <div class="games-home-copy">
+            <div class="eyebrow mono">INTERACTIVE</div>
+            <h2>GAMES</h2>
+            <p class="section-copy">
+              Try interactive cybersecurity and blockchain experiences
+              built for the club.
+            </p>
+          </div>
+        </div>
+
+        <div class="packet-panic-home" id="packet-panic-game">
+          <div class="packet-panic-top">
+            <span class="mono">PACKET PANIC</span>
+            <span class="mono packet-panic-status" id="packet-game-status">3 CHANCES</span>
+          </div>
+
+          <p class="packet-game-instruction">
+            Some packets are malicious. Select the packets you think are threats, then submit your analysis.
+          </p>
+
+          <div class="packet-game-meta mono">
+            <span id="packet-threat-count">THREATS: --</span>
+            <span id="packet-chances">CHANCES: 03</span>
+          </div>
+
+          <div class="packet-game-list" id="packet-game-list" aria-live="polite"></div>
+
+          <div class="packet-game-actions">
+            <button class="btn btn-primary packet-submit" id="packet-submit" type="button">SUBMIT ANALYSIS</button>
+            <button class="btn btn-outline packet-reset" id="packet-reset" type="button">NEW ROUND</button>
+          </div>
+
+          <div class="packet-game-feedback mono" id="packet-game-feedback"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="section home-about-section" id="about">
+    <div class="container">
+      <div class="section-head home-about-head">
+        <div>
+          <h2>ABOUT</h2>
+          <p class="section-copy">
+            A community for students who want to understand
+            distributed systems and security as one connected discipline —
+            not two separate tracks.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="wwd-item">
+          <div class="wwd-num mono">01 /</div>
+          <h3>BUILD</h3>
+          <p>Build practical systems, prototypes and experiments around blockchain and cybersecurity.</p>
+        </div>
+        <div class="wwd-item">
+          <div class="wwd-num mono">02 /</div>
+          <h3>LEARN</h3>
+          <p>Learn through workshops, challenges, technical sessions and hands-on projects.</p>
+        </div>
+        <div class="wwd-item">
+          <div class="wwd-num mono">03 /</div>
+          <h3>EXPLORE</h3>
+          <p>Explore emerging technologies with a community that values curiosity and experimentation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="upcoming-events">
+    <div class="container">
+      <div class="section-top-row" style="margin-bottom:40px;">
+        <div class="section-head" style="margin-bottom:0;">
+          <div>
+            <div class="eyebrow mono">UPCOMING</div>
+            <h2>EVENTS</h2>
+          </div>
+        </div>
+        <a href="#/events" class="link-btn mono">VIEW ALL →</a>
+      </div>
+
+      <div class="row-list">
+        ${
+          upcomingEvents.length
+            ? upcomingEvents.map((e,i)=>EventRow(e,i)).join('')
+            : EmptyState({title:'NO UPCOMING EVENTS',msg:'New events will appear here once published.'})
+        }
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function EventRow(e,i){
+  return `<a href="#/events" class="row-item">
+    <div class="row-index mono">${String(i+1).padStart(2,'0')}</div>
+    <div class="row-main">
+      <div class="row-type mono">${esc(e.type||'Event')}</div>
+      <h3>${esc(e.title)}</h3>
+      <div class="row-meta">${fmtDate(e.date)}${e.location?' — '+esc(e.location):''}</div>
+    </div>
+    <div class="row-arrow mono">→</div>
+  </a>`;
+}
+function ProjectRow(p,i){
+  return `<a href="#/projects" class="row-item">
+    <div class="row-index mono">${String(i+1).padStart(2,'0')}</div>
+    <div class="row-main">
+      <div class="row-type mono">${esc(p.status||'active')}</div>
+      <h3>${esc(p.title)}</h3>
+      <div class="row-meta">${esc(p.year||'')}</div>
+    </div>
+    <div class="row-arrow mono">→</div>
+  </a>`;
+}
+function CourseRow(c,i){
+  return `<a href="#/courses" class="row-item">
+    <div class="row-index mono">${String(i+1).padStart(2,'0')}</div>
+    <div class="row-main">
+      <div class="row-type mono">${esc(c.level||'Course')}</div>
+      <h3>${esc(c.title)}</h3>
+      <div class="row-meta">${esc(c.duration||'')}${c.instructor?' — '+esc(c.instructor):''}</div>
+    </div>
+    <div class="row-arrow mono">→</div>
+  </a>`;
+}
+function BlogCard(b){
+  return `<a href="#/blogs/${b.id}" class="blog-card">
+    ${ImgOrPlaceholder(b.coverImage, b.title)}
+    <div class="bc-body">
+      <div class="bc-meta mono">${esc(b.category||'Article')}</div>
+      <h3>${esc(b.title)}</h3>
+      <p>${esc(b.excerpt||'')}</p>
+      <div class="bc-foot mono">${esc(b.author||'')} — ${fmtDate(b.createdAt)}</div>
+    </div>
+  </a>`;
+}
+function TeamCard(t){
+  return `<div class="team-card">
+    ${ImgOrPlaceholder(t.image, t.name, true)}
+    <h3>${esc(t.name)}</h3>
+    <div class="role mono">${esc(t.role)}</div>
+    <div class="dept mono">${esc(t.department||'')}</div>
+  </div>`;
+}
+
+async function AboutPage(){
+  const a = await aboutService.get();
+  return `${NavBar('#/about')}
+  ${PageHead('ABOUT','About the Club')}
+  <section class="section">
+    <div class="container">
+      <div class="prose">
+        <p>${esc(a.description)}</p>
+      </div>
+      <div class="grid grid-3" style="margin-top:64px;">
+        <div class="wwd-item"><div class="wwd-num mono">MISSION</div><p>${esc(a.mission)}</p></div>
+        <div class="wwd-item"><div class="wwd-num mono">VISION</div><p>${esc(a.vision)}</p></div>
+        <div class="wwd-item"><div class="wwd-num mono">FOUNDED</div><p>${esc(a.foundedYear)}</p></div>
+      </div>
+    </div>
+  </section>
+  
+  `;
+}
+
+async function EventsPage(){
+  return `${NavBar('#/events')}
+
+  ${PageHead(
+    '01 / EVENTS',
+    'Events',
+    'See upcoming Blockchain Club events and activities.'
+  )}
+
+  <section class="section calendar-section">
+    <div class="container">
+
+      <div class="calendar">
+
+        <div class="calendar-header">
+          <button
+            class="calendar-nav mono"
+            id="calendar-prev"
+            aria-label="Previous month">
+            ←
+          </button>
+
+          <div>
+            <div class="calendar-month" id="calendar-month"></div>
+            <div class="calendar-year mono" id="calendar-year"></div>
+          </div>
+
+          <button
+            class="calendar-nav mono"
+            id="calendar-next"
+            aria-label="Next month">
+            →
+          </button>
+        </div>
+
+        <div class="calendar-weekdays mono">
+          <div>MON</div>
+          <div>TUE</div>
+          <div>WED</div>
+          <div>THU</div>
+          <div>FRI</div>
+          <div>SAT</div>
+          <div>SUN</div>
+        </div>
+
+        <div
+          class="calendar-grid"
+          id="calendar-grid">
+        </div>
+        <div
+  class="calendar-details"
+  id="calendar-details">
+  <div class="eyebrow mono">SELECTED DATE</div>
+  <h3 id="selected-date">Select a date</h3>
+  <p id="selected-date-message">
+    Select a date on the calendar to see events.
+  </p>
+</div>
+
+
+    </div>
+  </section>
+
+  `;
+}
+function EventRowFull(e,i){
+  return `<div class="row-item" style="cursor:default;">
+    <div class="row-index mono">${String(i+1).padStart(2,'0')}</div>
+    <div class="row-main">
+      <div class="row-type mono">${esc(e.type||'Event')}</div>
+      <h3>${esc(e.title)}</h3>
+      <p class="text-dim" style="font-size:13.5px;margin:8px 0;max-width:560px;">${esc(e.description||'')}</p>
+      <div class="row-meta">${fmtDate(e.date)} ${e.time?'— '+esc(e.time):''} ${e.location?'— '+esc(e.location):''}</div>
+    </div>
+    ${e.registrationLink ? `<a href="${esc(e.registrationLink)}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">Register</a>` : `<span class="row-arrow mono"></span>`}
+  </div>`;
+}
+
+
+async function GamesPage(){
+  return `${NavBar('#/games')}
+  ${PageHead('02 / GAMES','Games','Interactive experiences published by Blockchain Club.')}
+  <section class="section">
+    <div class="container">
+      <div class="games-empty-admin">
+        <div class="eyebrow mono">GAME LIBRARY</div>
+        <h2>NO GAMES PUBLISHED</h2>
+        <p class="section-copy">
+          Games added through the admin panel will appear here.
+        </p>
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+async function ProjectsPage(){
+  const projects = (await projectService.getAll()).filter(p => (p.visibility||'draft') === 'published');
+  return `${NavBar('#/projects')}
+  ${PageHead('PROJECTS','Projects','Ongoing and completed work from club members, spanning both blockchain and security tooling.')}
+  <section class="section">
+    <div class="container">
+      <div class="row-list">
+        ${projects.length ? projects.map((p,i)=>ProjectRowFull(p,i)).join('') : EmptyState({title:'No projects yet', msg:'Club projects will appear here once published.'})}
+      </div>
+    </div>
+  </section>
+  `;
+}
+function ProjectRowFull(p,i){
+  const links = (p.links||'').split(',').map(s=>s.trim()).filter(Boolean).map(pair=>{
+    const [label,url] = pair.split('|').map(s=>(s||'').trim());
+    return url ? `<a href="${esc(url)}" target="_blank" rel="noopener" class="link-btn mono">${esc(label||'LINK')} ↗</a>` : '';
+  }).join(' ');
+  return `<div class="row-item" style="cursor:default;">
+    <div class="row-index mono">${String(i+1).padStart(2,'0')}</div>
+    <div class="row-main">
+      <div class="row-type mono">${esc(p.status||'active')} · ${esc(p.year||'')}</div>
+      <h3>${esc(p.title)}</h3>
+      <p class="text-dim" style="font-size:13.5px;margin:8px 0;max-width:560px;">${esc(p.description||'')}</p>
+      ${p.teamMembers ? `<div class="row-meta">${esc(p.teamMembers)}</div>` : ''}
+      ${links ? `<div style="margin-top:8px;display:flex;gap:16px;">${links}</div>` : ''}
+    </div>
+    <span class="badge ${p.status==='completed'?'published':''} mono">${esc(p.status||'')}</span>
+  </div>`;
+}
+
+async function CoursesPage(){
+  const courses = await courseService.getPublished();
+  return `${NavBar('#/courses')}
+  ${PageHead('COURSES','Technical Courses','Structured, lab-driven courses taught by club leadership and faculty.')}
+  <section class="section">
+    <div class="container">
+      <div class="row-list">
+        ${courses.length ? courses.map((c,i)=>CourseRowFull(c,i)).join('') : EmptyState({title:'No courses yet', msg:'Technical courses will appear here once published.'})}
+      </div>
+    </div>
+  </section>
+  `;
+}
+function CourseRowFull(c,i){
+  return `<div class="row-item" style="cursor:default;">
+    <div class="row-index mono">${String(i+1).padStart(2,'0')}</div>
+    <div class="row-main">
+      <div class="row-type mono">${esc(c.level||'')} · ${esc(c.duration||'')}</div>
+      <h3>${esc(c.title)}</h3>
+      <p class="text-dim" style="font-size:13.5px;margin:8px 0;max-width:560px;">${esc(c.description||'')}</p>
+      <div class="row-meta">${esc(c.instructor?'Instructor: '+c.instructor:'')}</div>
+    </div>
+    ${c.registrationLink ? `<a href="${esc(c.registrationLink)}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">Enroll</a>` : `<span class="row-arrow mono"></span>`}
+  </div>`;
+}
+
+async function TeamPage(){
+  const team = (await teamService.getAll()).sort((a,b)=>(+a.order||99)-(+b.order||99));
+  return `${NavBar('#/team')}
+  ${PageHead('04 / TEAM','Team','The students leading research, projects, and events for the club.')}
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-4">
+        ${team.length ? team.map(t=>TeamCardFull(t)).join('') : EmptyState({title:'No team members listed', msg:'Team profiles will appear here once published.'})}
+      </div>
+    </div>
+  </section>
+  `;
+}
+function TeamCardFull(t){
+  return `<div class="team-card">
+    ${ImgOrPlaceholder(t.image, t.name, true)}
+    <h3>${esc(t.name)}</h3>
+    <div class="role mono">${esc(t.role)}</div>
+    <div class="dept mono">${esc(t.department||'')}</div>
+    ${t.bio ? `<p class="bio">${esc(t.bio)}</p>` : ''}
+    <div style="margin-top:12px;display:flex;gap:14px;">
+      ${t.email ? `<a href="mailto:${esc(t.email)}" class="link-btn mono">EMAIL</a>` : ''}
+      ${t.linkedin ? `<a href="${esc(t.linkedin)}" target="_blank" rel="noopener" class="link-btn mono">LINKEDIN</a>` : ''}
+      ${t.github ? `<a href="${esc(t.github)}" target="_blank" rel="noopener" class="link-btn mono">GITHUB</a>` : ''}
+    </div>
+  </div>`;
+}
+
+async function BlogsPage(){
+  const blogs = (await blogService.getPublished()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  return `${NavBar('#/blogs')}
+  ${PageHead('03 / BLOGS','Blog','Research notes, write-ups, and updates from club members.')}
+  <section class="section">
+    <div class="container">
+      ${blogs.length
+        ? `<div class="grid grid-3">${blogs.map(b=>BlogCard(b)).join('')}</div>`
+        : EmptyState({ title:'No entries yet', msg:'Articles from the Blockchain Club will appear here when published.' })}
+    </div>
+  </section>
+  `;
+}
+async function BlogDetailPage(params){
+  const blog = await blogService.getById(params.id);
+  if(!blog || blog.status !== 'published') return NotFoundPage();
+  const contentHtml = (typeof marked !== 'undefined' && blog.content) ? marked.parse(blog.content) : `<p>${esc(blog.content||'')}</p>`;
+  return `${NavBar('#/blogs')}
+  <div class="page-head">
+    <div class="container">
+      <a href="#/blogs" class="link-btn mono">← ALL ARTICLES</a>
+      <div class="eyebrow mono" style="margin-top:22px;">${esc(blog.category||'ARTICLE')}</div>
+      <h1 style="font-size:clamp(28px,4.6vw,46px);">${esc(blog.title)}</h1>
+      <p class="mono text-dim" style="margin-top:14px;font-size:12px;">${esc(blog.author||'')} — ${fmtDate(blog.createdAt)}</p>
+    </div>
+  </div>
+  <section class="section">
+    <div class="container">
+      ${blog.coverImage ? `<img src="${esc(blog.coverImage)}" alt="${esc(blog.title)}" style="width:100%;border:1px solid var(--border);margin-bottom:48px;max-height:440px;object-fit:cover;">` : ''}
+      <div class="prose">${contentHtml}</div>
+    </div>
+  </section>
+  `;
+}
+
+function adminShell(content, activeKey){
+  const navItems = [
+    ['dashboard','Dashboard'], ['homepage','Homepage'], ['about','About'],
+    ['blogs','Blogs'], ['events','Events'], ['projects','Projects'],
+    ['courses','Courses'], ['team','Team'], ['contact','Contact']
+  ];
+  return `<div class="admin-shell">
+    <aside class="admin-sidebar">
+      <div class="admin-brand mono">BCC ADMIN<small>CONTROL PANEL</small></div>
+      <nav class="admin-nav">
+        ${navItems.map(([k,label])=>`<a href="#/admin/${k}" class="${activeKey===k?'active':''}">${label}</a>`).join('')}
+        <div class="divider"></div>
+        <a href="#/">View Public Site ↗</a>
+      </nav>
+      <div class="admin-foot" id="admin-foot"></div>
+    </aside>
+    <main class="admin-main">${content}</main>
+  </div>`;
+}
+async function paintAdminFoot(){
+  const el = document.getElementById('admin-foot');
+  if(!el) return;
+  const user = await authService.currentUser();
+  el.innerHTML = `<div class="user-email">${esc(user?.email || '')}</div><button class="btn btn-outline btn-sm" data-action="logout" style="width:100%;">Log Out</button>`;
+}
+
+async function AdminLoginPage(){
+  return `<div class="login-wrap">
+    
+    <div class="login-box">
+      <div class="eyebrow mono">05 / ADMIN</div>
+      <h1>Admin Access</h1>
+      <form id="login-form">
+        <div class="login-error mono" id="login-error"></div>
+        <div class="field"><label>Email / Username</label><input type="text" name="email" required placeholder="admin@bcc-club.edu"></div>
+        <div class="field"><label>Password</label><input type="password" name="password" required placeholder="••••••••"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Log In</button>
+      </form>
+      <p class="login-note">Prototype authentication for frontend development only — no credentials are verified against a real backend. Any email with a password of 4+ characters will work. Do not treat this as secure.</p>
+    </div>
+  </div>`;
+}
+function bindLoginForm(){
+  const form = document.getElementById('login-form');
+  if(!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    const res = await authService.login(data.get('email'), data.get('password'));
+    const errEl = document.getElementById('login-error');
+    if(res.ok){ location.hash = '#/admin/dashboard'; }
+    else { errEl.textContent = res.error; }
+  });
+}
+
+async function AdminDashboardPage(){
+  const [blogs, events, projects, courses, team] = await Promise.all([
+    blogService.getAll(), eventService.getAll(), projectService.getAll(), courseService.getAll(), teamService.getAll()
+  ]);
+  const publishedBlogs = blogs.filter(b=>b.status==='published').length;
+  const upcomingEvents = events.filter(e=>e.status==='published').length;
+  const activeProjects = projects.filter(p=>(p.visibility||'draft')==='published').length;
+  const publishedCourses = courses.filter(c=>c.status==='published').length;
+
+  const activity = [
+    ...blogs.map(i=>({...i,__type:'Blog'})), ...events.map(i=>({...i,__type:'Event'})),
+    ...projects.map(i=>({...i,__type:'Project'})), ...courses.map(i=>({...i,__type:'Course'})),
+    ...team.map(i=>({...i,__type:'Team member'}))
+  ].sort((a,b)=>(b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)).slice(0,8);
+
+  return adminShell(`
+    <div class="admin-topbar"><h1>Dashboard</h1></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${publishedBlogs}</div><div class="stat-lbl mono">Published Blogs</div></div>
+      <div class="stat-card"><div class="stat-num">${upcomingEvents}</div><div class="stat-lbl mono">Upcoming Events</div></div>
+      <div class="stat-card"><div class="stat-num">${activeProjects}</div><div class="stat-lbl mono">Published Projects</div></div>
+      <div class="stat-card"><div class="stat-num">${publishedCourses}</div><div class="stat-lbl mono">Published Courses</div></div>
+      <div class="stat-card"><div class="stat-num">${team.length}</div><div class="stat-lbl mono">Team Members</div></div>
+    </div>
+    <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;color:var(--text-dim);">Recent Activity</h3>
+    <div class="activity-list">
+      ${activity.length ? activity.map(i=>`<div class="activity-row">
+          <span>${esc(i.__type)} — <strong style="color:var(--text);font-weight:500;">${esc(i.title||i.name||'Untitled')}</strong></span>
+          <span class="act-time mono">${fmtDate(i.updatedAt||i.createdAt)}</span>
+        </div>`).join('')
+        : `<div class="activity-row"><span class="text-dim">No activity yet.</span></div>`}
+    </div>
+  `, 'dashboard');
+}
+
+async function AdminHomepagePage(){
+  const hp = await homepageService.get();
+  return adminShell(`
+    <div class="admin-topbar"><h1>Homepage Content</h1></div>
+    <form id="homepage-form" class="admin-form">
+      <div class="field"><label>Hero Eyebrow</label><input type="text" name="heroEyebrow" value="${esc(hp.heroEyebrow)}"></div>
+      <div class="field"><label>Hero Title (use a new line for a line break)</label><textarea name="heroTitle" rows="2">${esc(hp.heroTitle)}</textarea></div>
+      <div class="field"><label>Hero Description</label><textarea name="heroDescription">${esc(hp.heroDescription)}</textarea></div>
+      <div class="form-row-2">
+        <div class="field"><label>Primary CTA Label</label><input type="text" name="ctaPrimary" value="${esc(hp.ctaPrimary)}"></div>
+        <div class="field"><label>Primary CTA Link</label><input type="text" name="ctaPrimaryLink" value="${esc(hp.ctaPrimaryLink)}"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="field"><label>Secondary CTA Label</label><input type="text" name="ctaSecondary" value="${esc(hp.ctaSecondary)}"></div>
+        <div class="field"><label>Secondary CTA Link</label><input type="text" name="ctaSecondaryLink" value="${esc(hp.ctaSecondaryLink)}"></div>
+      </div>
+      <hr class="divider" style="margin:28px 0;">
+      <div class="form-row-2">
+        <div class="field"><label>"What We Do" 1 — Title</label><input type="text" name="wwd1Title" value="${esc(hp.wwd1Title)}"></div>
+        <div class="field"><label>"What We Do" 1 — Description</label><input type="text" name="wwd1Desc" value="${esc(hp.wwd1Desc)}"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="field"><label>"What We Do" 2 — Title</label><input type="text" name="wwd2Title" value="${esc(hp.wwd2Title)}"></div>
+        <div class="field"><label>"What We Do" 2 — Description</label><input type="text" name="wwd2Desc" value="${esc(hp.wwd2Desc)}"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="field"><label>"What We Do" 3 — Title</label><input type="text" name="wwd3Title" value="${esc(hp.wwd3Title)}"></div>
+        <div class="field"><label>"What We Do" 3 — Description</label><input type="text" name="wwd3Desc" value="${esc(hp.wwd3Desc)}"></div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">Save Changes</button></div>
+    </form>
+  `, 'homepage');
+}
+function bindHomepageForm(){
+  const form = document.getElementById('homepage-form');
+  if(!form) return;
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    await homepageService.update(data);
+    showToast('Homepage updated.');
+  });
+}
+async function AdminAboutPage(){
+  const a = await aboutService.get();
+  return adminShell(`
+    <div class="admin-topbar"><h1>About Page Content</h1></div>
+    <form id="about-form" class="admin-form">
+      <div class="field"><label>Club Description</label><textarea name="description" rows="6">${esc(a.description)}</textarea></div>
+      <div class="field"><label>Mission</label><textarea name="mission">${esc(a.mission)}</textarea></div>
+      <div class="field"><label>Vision</label><textarea name="vision">${esc(a.vision)}</textarea></div>
+      <div class="field"><label>Founded Year</label><input type="text" name="foundedYear" value="${esc(a.foundedYear)}"></div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">Save Changes</button></div>
+    </form>
+  `, 'about');
+}
+function bindAboutForm(){
+  const form = document.getElementById('about-form');
+  if(!form) return;
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    await aboutService.update(Object.fromEntries(new FormData(form).entries()));
+    showToast('About page updated.');
+  });
+}
+
+async function AdminGamesPage(){
+  const g = await gamesService.get();
+  return adminShell(`
+    <div class="admin-topbar"><h1>Games</h1></div>
+    <form id="games-form" class="admin-form">
+      <div class="field"><label>Title</label><input type="text" name="title" value="${esc(g.title)}"></div>
+      <div class="field"><label>Description</label><textarea name="description">${esc(g.description)}</textarea></div>
+      <div class="field"><label>Interactive Games Link (optional)</label><input type="text" name="prototypeLink" value="${esc(g.prototypeLink)}" placeholder="Add a game later"></div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">Save Changes</button></div>
+    </form>
+  `, 'games');
+}
+function bindGamesForm(){
+  const form = document.getElementById('games-form');
+  if(!form) return;
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    await gamesService.update(Object.fromEntries(new FormData(form).entries()));
+    showToast('Games section updated.');
+  });
+}
+
+async function AdminResourceListPage(resourceKey){
+  const cfg = resourceConfigs[resourceKey];
+  const items = await cfg.service.getAll();
+  const statusKey = cfg.statusField || 'status';
+  const rows = items.map(it => `<tr>
+    ${cfg.listColumns.map(([k]) => `<td>${k==='updatedAt'||k==='date' ? fmtDate(it[k]) : esc(it[k]||'—')}</td>`).join('')}
+    <td class="admin-row-actions">
+      <a href="#/admin/${resourceKey}/edit/${it.id}" class="link-btn mono">EDIT</a>
+      ${!cfg.noStatus ? `<button data-action="toggle-status" data-id="${it.id}" data-resource="${resourceKey}" class="link-btn mono">${it[statusKey]==='published'?'UNPUBLISH':'PUBLISH'}</button>` : ''}
+      <button data-action="delete" data-id="${it.id}" data-resource="${resourceKey}" class="link-btn danger mono">DELETE</button>
+    </td>
+  </tr>`).join('');
+  return adminShell(`
+    <div class="admin-topbar">
+      <h1>${cfg.label}</h1>
+      <a href="#/admin/${resourceKey}/new" class="btn btn-primary">+ New ${cfg.singular}</a>
+    </div>
+    ${items.length ? `<table class="admin-table"><thead><tr>${cfg.listColumns.map(([,l])=>`<th>${l}</th>`).join('')}<th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`
+      : EmptyState({title:`No ${cfg.label.toLowerCase()} yet`, msg:`Create your first ${cfg.singular.toLowerCase()} to get started.`, ctaText:`+ NEW ${cfg.singular.toUpperCase()}`, ctaHref:`#/admin/${resourceKey}/new`})}
+  `, resourceKey);
+}
+function renderField(f, value){
+  const val = value ?? '';
+  const req = f.required ? 'required' : '';
+  if(f.type === 'textarea'){
+    return `<div class="field"><label>${esc(f.label)}${f.required?' *':''}</label><textarea name="${f.key}" ${req} placeholder="${esc(f.placeholder||'')}">${esc(val)}</textarea></div>`;
+  }
+  if(f.type === 'markdown'){
+    return `<div class="field"><label>${esc(f.label)}${f.required?' *':''}</label><textarea name="${f.key}" ${req} rows="12" class="mono-area" placeholder="${esc(f.placeholder||'')}">${esc(val)}</textarea>${f.hint?`<div class="field-hint">${esc(f.hint)}</div>`:''}</div>`;
+  }
+  if(f.type === 'select'){
+    return `<div class="field"><label>${esc(f.label)}</label><select name="${f.key}">
+      ${f.options.map(o=>`<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`).join('')}
+    </select></div>`;
+  }
+  if(f.type === 'date'){
+    return `<div class="field"><label>${esc(f.label)}</label><input type="date" name="${f.key}" value="${esc(val)}" ${req}></div>`;
+  }
+  return `<div class="field"><label>${esc(f.label)}${f.required?' *':''}</label><input type="text" name="${f.key}" value="${esc(val)}" ${req} placeholder="${esc(f.placeholder||'')}"></div>`;
+}
+async function AdminResourceEditorPage(resourceKey, id){
+  const cfg = resourceConfigs[resourceKey];
+  const isNew = !id;
+  const item = isNew ? {} : await cfg.service.getById(id);
+  if(!isNew && !item) return `${adminShell(EmptyState({title:'Not found', msg:'This item no longer exists.', ctaText:'← BACK TO LIST', ctaHref:`#/admin/${resourceKey}`}), resourceKey)}`;
+  const statusKey = cfg.statusField || 'status';
+  const currentStatus = item[statusKey] || 'draft';
+  return adminShell(`
+    <div class="admin-topbar">
+      <h1>${isNew?'New':'Edit'} ${cfg.singular}</h1>
+      ${!isNew && !cfg.noStatus ? `<span class="badge ${currentStatus==='published'?'published':'draft'} mono">${currentStatus}</span>` : ''}
+    </div>
+    <form id="resource-form" class="admin-form">
+      ${cfg.fields.map(f => renderField(f, item[f.key])).join('')}
+      <div class="form-actions">
+        ${!cfg.noStatus ? `
+          <button type="submit" data-status="draft" class="btn btn-outline">Save Draft</button>
+          <button type="submit" data-status="published" class="btn btn-primary">Publish</button>
+        ` : `<button type="submit" data-status="" class="btn btn-primary">Save</button>`}
+        <a href="#/admin/${resourceKey}" class="link-btn mono">Cancel</a>
+      </div>
+    </form>
+  `, resourceKey);
+}
+function bindResourceEditor(resourceKey, id){
+  const form = document.getElementById('resource-form');
+  if(!form) return;
+  const cfg = resourceConfigs[resourceKey];
+  const statusKey = cfg.statusField || 'status';
+  form.querySelectorAll('button[type=submit]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      if(btn.dataset.status) data[statusKey] = btn.dataset.status;
+      if(id){ await cfg.service.update(id, data); showToast('Saved changes.'); }
+      else { await cfg.service.create(data); showToast(`${cfg.singular} created.`); }
+      location.hash = `#/admin/${resourceKey}`;
+    });
+  });
+}
+
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  const action = btn.dataset.action;
+  if(action === 'mobile-menu-toggle'){
+    document.getElementById('site-nav')?.classList.toggle('nav-open');
+    return;
+  }
+  if(action === 'logout'){
+    await authService.logout();
+    location.hash = '#/admin/login';
+    return;
+  }
+  const resourceKey = btn.dataset.resource;
+  const id = btn.dataset.id;
+  if(action === 'delete'){
+    if(!confirm('Delete this item? This cannot be undone.')) return;
+    await resourceConfigs[resourceKey].service.delete(id);
+    showToast('Deleted.');
+    render();
+  } else if(action === 'toggle-status'){
+    const cfg = resourceConfigs[resourceKey];
+    const statusKey = cfg.statusField || 'status';
+    const item = await cfg.service.getById(id);
+    const next = item[statusKey] === 'published' ? 'draft' : 'published';
+    await cfg.service.update(id, { [statusKey]: next });
+    showToast(next === 'published' ? 'Published.' : 'Unpublished.');
+    render();
+  }
+});
+document.addEventListener('submit', (e) => {
+  if(e.target && e.target.id === 'contact-form'){
+    e.preventDefault();
+    showToast('Message received — thanks for reaching out.');
+    e.target.reset();
+  }
+});
+
+
+/* =========================================================
+   DENSE ASCII SYMBOL FIELD
+   ========================================================= */
+function initHomeSymbolField(){
+  const canvas=document.getElementById('home-symbol-canvas');
+  if(!canvas) return;
+
+  const ctx=canvas.getContext('2d');
+  if(!ctx) return;
+
+  let W=0,H=0,dpr=1,cells=[];
+
+  const white=['·','.','+','=','*','-','%','#',':'];
+  const red=['+','*','#','%','-'];
+
+  function resize(){
+    const rect=canvas.getBoundingClientRect();
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=Math.max(1,Math.floor(rect.width));
+    H=Math.max(1,Math.floor(rect.height));
+
+    canvas.width=Math.floor(W*dpr);
+    canvas.height=Math.floor(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    const cellW=13;
+    const cellH=16;
+    const cols=Math.ceil(W/cellW);
+    const rows=Math.ceil(H/cellH);
+
+    const copy=document.querySelector('.home-copy');
+    let exclusion=null;
+
+    if(copy){
+      const c=copy.getBoundingClientRect();
+      const cr=canvas.getBoundingClientRect();
+      const padX=24;
+      const padY=20;
+      exclusion={
+        left:c.left-cr.left-padX,
+        right:c.right-cr.left+padX,
+        top:c.top-cr.top-padY,
+        bottom:c.bottom-cr.top+padY
+      };
+    }
+
+    cells=[];
+
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        const px=x*cellW+Math.random()*5;
+        const py=y*cellH+Math.random()*5;
+
+        // Keep the entire heading/description/button area clean.
+        if(exclusion &&
+           px>=exclusion.left && px<=exclusion.right &&
+           py>=exclusion.top && py<=exclusion.bottom){
+          continue;
+        }
+
+        // Slightly reduce density right next to the clean text boundary,
+        // while keeping the outer field dense and visible.
+        const edgeX=exclusion ? Math.min(Math.abs(px-exclusion.left),Math.abs(px-exclusion.right)) : 9999;
+        const edgeY=exclusion ? Math.min(Math.abs(py-exclusion.top),Math.abs(py-exclusion.bottom)) : 9999;
+        let density=.92;
+        if(exclusion && (edgeX<45 || edgeY<45)) density=.70;
+
+        if(Math.random()<density){
+          const isRed=Math.random()<.028;
+          cells.push({
+            x:px,
+            y:py,
+            char:isRed
+              ? red[Math.floor(Math.random()*red.length)]
+              : white[Math.floor(Math.random()*white.length)],
+            red:isRed,
+            alpha:isRed ? .20+Math.random()*.08 : .22+Math.random()*.11
+          });
+        }
+      }
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.font='11px "IBM Plex Mono",monospace';
+    ctx.textBaseline='top';
+
+    for(const c of cells){
+      ctx.fillStyle=c.red
+        ? `rgba(208,43,68,${c.alpha})`
+        : `rgba(241,236,225,${c.alpha})`;
+      ctx.fillText(c.char,c.x,c.y);
+    }
+  }
+
+  resize();
+  draw();
+
+  window.addEventListener('resize',()=>{
+    resize();
+    draw();
+  },{passive:true});
+}
+
+function initInlinePacketPanic(){
+  const root=document.getElementById('packet-panic-game');
+  if(!root) return;
+
+  const list=root.querySelector('#packet-game-list');
+  const submit=root.querySelector('#packet-submit');
+  const reset=root.querySelector('#packet-reset');
+  const feedback=root.querySelector('#packet-game-feedback');
+  const threatCount=root.querySelector('#packet-threat-count');
+  const chancesEl=root.querySelector('#packet-chances');
+  const status=root.querySelector('#packet-game-status');
+  if(!list || !submit || !reset) return;
+
+  const protocols=['TLS','DNS','HTTP','TCP','HTTPS','SSH','FTP','API'];
+  const packetCount=8;
+  let packets=[];
+  let chances=3;
+  let locked=false;
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function newRound(){
+    chances=3;
+    locked=false;
+    feedback.textContent='';
+    feedback.className='packet-game-feedback mono';
+    submit.disabled=false;
+    reset.textContent='NEW ROUND';
+
+    const threatCountValue=2+Math.floor(Math.random()*3); // 2–4 threats
+    const threatIndexes=new Set(shuffle([...Array(packetCount).keys()]).slice(0,threatCountValue));
+
+    packets=Array.from({length:packetCount},(_,i)=>({
+      id:i+1,
+      protocol:protocols[i],
+      source:`10.0.${Math.floor(Math.random()*8)+1}.${Math.floor(Math.random()*220)+10}`,
+      size:Math.floor(180+Math.random()*820),
+      threat:threatIndexes.has(i),
+      selected:false
+    }));
+
+    threatCount.textContent=`THREATS: ${String(threatCountValue).padStart(2,'0')}`;
+    chancesEl.textContent='CHANCES: 03';
+    status.textContent='3 CHANCES';
+    render();
+  }
+
+  function render(reveal=false){
+    list.innerHTML=packets.map(p=>`
+      <button type="button"
+        class="packet-game-row ${p.selected?'selected':''} ${reveal && p.threat?'reveal-threat':''} ${reveal && !p.threat?'reveal-safe':''}"
+        data-packet="${p.id}"
+        ${locked?'disabled':''}>
+        <span><span class="packet-game-check"></span>PKT ${String(p.id).padStart(2,'0')}</span>
+        <span>${p.source}</span>
+        <span>${p.protocol}</span>
+        <span>${p.size} B</span>
+      </button>
+    `).join('');
+
+    if(!locked){
+      list.querySelectorAll('.packet-game-row').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const packet=packets.find(p=>p.id===Number(btn.dataset.packet));
+          if(!packet) return;
+          packet.selected=!packet.selected;
+          render();
+        });
+      });
+    }
+  }
+
+  function submitAnalysis(){
+    if(locked) return;
+    const guessed=packets.filter(p=>p.selected).map(p=>p.id).sort((a,b)=>a-b);
+    const actual=packets.filter(p=>p.threat).map(p=>p.id).sort((a,b)=>a-b);
+    const correct=guessed.length===actual.length && guessed.every((v,i)=>v===actual[i]);
+
+    if(correct){
+      locked=true;
+      render(true);
+      feedback.textContent=`THREAT ANALYSIS CORRECT // ${actual.length} MALICIOUS PACKET${actual.length===1?'':'S'} FOUND`;
+      feedback.className='packet-game-feedback mono good';
+      status.textContent='ROUND CLEARED';
+      submit.disabled=true;
+      reset.textContent='PLAY AGAIN';
+      return;
+    }
+
+    chances--;
+    chancesEl.textContent=`CHANCES: ${String(chances).padStart(2,'0')}`;
+
+    if(chances<=0){
+      locked=true;
+      render(true);
+      feedback.textContent=`ANALYSIS FAILED // THREATS WERE PKT ${actual.map(n=>String(n).padStart(2,'0')).join(', PKT ')}`;
+      feedback.className='packet-game-feedback mono bad';
+      status.textContent='ROUND FAILED';
+      submit.disabled=true;
+      reset.textContent='TRY AGAIN';
+    }else{
+      feedback.textContent=`INCORRECT // ${chances} CHANCE${chances===1?'':'S'} REMAIN`;
+      feedback.className='packet-game-feedback mono bad';
+      status.textContent=`${chances} CHANCE${chances===1?'':'S'} LEFT`;
+      packets.forEach(p=>p.selected=false);
+      render();
+    }
+  }
+
+  submit.addEventListener('click',submitAnalysis);
+  reset.addEventListener('click',newRound);
+  newRound();
+}
+
+function initGlobalWidgets(path){
+  const net = document.getElementById('network-canvas');
+  if(net) initNetworkCanvas(net);
+  const ascii = document.getElementById('ascii-canvas');
+  if(ascii) initAsciiCanvas(ascii);
+  if(document.getElementById('admin-foot')) paintAdminFoot();
+  initPacketPanic();
+  initInlinePacketPanic();
+  initBlockchainDemo();
+}
+
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+
+function initPacketPanic(){
+  const stream = document.getElementById('packet-stream');
+  const scan = document.getElementById('packet-scan');
+  const status = document.getElementById('packet-status');
+  if(!stream || !scan) return;
+  const packets = [
+    ['PKT 01','TLS','SAFE'],
+    ['PKT 02','DNS','SAFE'],
+    ['PKT 03','HTTP','THREAT'],
+    ['PKT 04','TLS','SAFE'],
+    ['PKT 05','HTTP','THREAT']
+  ];
+  stream.innerHTML = packets.map((p,i)=>`<div class="packet-row ${p[2]==='SAFE'?'safe':''}">
+    <span>${p[0]}</span><div class="packet-bar"><span></span></div><span>${p[1]}</span>
+  </div>`).join('');
+  scan.onclick = () => {
+    const threat = stream.querySelectorAll('.packet-row:not(.safe)');
+    threat.forEach(row => row.style.opacity = '.28');
+    status.textContent = '2 THREATS FLAGGED';
+    status.style.color = 'rgba(208,43,68,.8)';
+  };
+}
+
+function initNetworkCanvas(canvas){
+  const ctx = canvas.getContext('2d');
+  let w,h,nodes,raf;
+  function resize(){
+    const rect = canvas.parentElement.getBoundingClientRect();
+    w = canvas.width = rect.width * devicePixelRatio;
+    h = canvas.height = rect.height * devicePixelRatio;
+    canvas.style.width = rect.width+'px';
+    canvas.style.height = rect.height+'px';
+  }
+  function makeNodes(){
+    const count = Math.max(24, Math.floor((w*h) / (55000 * devicePixelRatio * devicePixelRatio)));
+    nodes = Array.from({length: count}, () => ({
+      x: Math.random()*w, y: Math.random()*h,
+      vx: (Math.random()-0.5)*0.15*devicePixelRatio, vy: (Math.random()-0.5)*0.15*devicePixelRatio,
+      accent: Math.random() < 0.08
+    }));
+  }
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    const maxDist = 150 * devicePixelRatio;
+    for(let i=0;i<nodes.length;i++){
+      const n = nodes[i];
+      if(!REDUCED_MOTION){ n.x += n.vx; n.y += n.vy; }
+      if(n.x < 0 || n.x > w) n.vx *= -1;
+      if(n.y < 0 || n.y > h) n.vy *= -1;
+      for(let j=i+1;j<nodes.length;j++){
+        const o = nodes[j];
+        const dx = n.x-o.x, dy = n.y-o.y;
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        if(dist < maxDist){
+          ctx.strokeStyle = `rgba(140,138,130,${(1-dist/maxDist)*0.18})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(n.x,n.y); ctx.lineTo(o.x,o.y); ctx.stroke();
+        }
+      }
+    }
+    for(const n of nodes){
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.accent ? 2.4*devicePixelRatio : 1.6*devicePixelRatio, 0, Math.PI*2);
+      ctx.fillStyle = n.accent ? 'rgba(144,12,32,.85)' : 'rgba(230,225,215,0.45)';
+      ctx.fill();
+    }
+    if(!REDUCED_MOTION) raf = requestAnimationFrame(draw);
+  }
+  resize(); makeNodes(); draw();
+  window.addEventListener('resize', () => { cancelAnimationFrame(raf); resize(); makeNodes(); draw(); }, { once:false });
+}
+function initAsciiCanvas(canvas){
+  const ctx = canvas.getContext('2d');
+  const chars = [' ','.',':','+','=','-','#'];
+  let cols=0, rows=0, cellW=0, cellH=0, w=0, h=0, phase=0, timer=null, raf=0;
+
+  function resize(){
+    const rect = canvas.parentElement.getBoundingClientRect();
+    w = Math.max(1, Math.floor(rect.width * devicePixelRatio));
+    h = Math.max(1, Math.floor(rect.height * devicePixelRatio));
+    canvas.width = w;
+    canvas.height = h;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    cellW = 8 * devicePixelRatio;
+    cellH = 15 * devicePixelRatio;
+    cols = Math.max(1, Math.floor(w / cellW));
+    rows = Math.max(1, Math.floor(h / cellH));
+  }
+
+  function noise(x,y,t){
+    return (
+      Math.sin(x*0.17 + t) +
+      Math.sin(y*0.43 - t*1.2) +
+      Math.sin((x+y)*0.055 + t*0.7)
+    ) / 3;
+  }
+
+  function bShape(x,y){
+    const bx = cols * 0.50;
+    const by = rows * 0.49;
+    const sx = cols * 0.17;
+    const sy = Math.max(4, rows * 0.40);
+    const nx = (x-bx)/sx;
+    const ny = (y-by)/sy;
+    const vertical = Math.abs(nx + 0.48) < 0.16 && Math.abs(ny) < 1;
+    const upper = Math.pow(nx-0.05,2) + Math.pow(ny+0.48,2) < 0.38;
+    const middle = Math.pow(nx-0.08,2) + Math.pow(ny,2) < 0.34;
+    const lower = Math.pow(nx-0.02,2) + Math.pow(ny-0.48,2) < 0.38;
+    const cut1 = Math.pow(nx+0.12,2) + Math.pow(ny+0.47,2) < 0.13;
+    const cut2 = Math.pow(nx+0.12,2) + Math.pow(ny-0.47,2) < 0.13;
+    return (vertical || upper || middle || lower) && !cut1 && !cut2;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    ctx.font = `${10.5*devicePixelRatio}px 'JetBrains Mono', monospace`;
+    ctx.textBaseline = 'top';
+
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        const edge = Math.min(y, rows-1-y);
+        const ambient = Math.max(0, 0.34 - edge*0.008);
+        const stream = noise(x,y,phase*0.9);
+        const b = bShape(x,y);
+        let density = ambient + (stream+1)*0.06 + (b ? 0.78 : 0);
+
+        if(y > rows*0.80){
+          density = 0.20 + ((Math.sin(x*0.45 + phase)+1)*0.08) + (stream+1)*0.03;
+        }
+
+        if(density < 0.23) continue;
+        const level = Math.max(1, Math.min(chars.length-1, Math.floor(density*chars.length)));
+        const ch = chars[level];
+        const flicker = Math.sin(x*0.9 + y*0.7 + phase*3.4);
+        const accent = (b && flicker > 0.92) || (!b && flicker > 0.995);
+
+        ctx.fillStyle = accent
+          ? 'rgba(144,12,32,.78)'
+          : `rgba(220,215,205,${b ? 0.28 + level*0.10 : 0.08 + level*0.07})`;
+        ctx.fillText(ch, x*cellW, y*cellH);
+      }
+    }
+
+    if(!REDUCED_MOTION){
+      phase += 0.018;
+      raf = requestAnimationFrame(draw);
+    }
+  }
+
+  resize();
+  cancelAnimationFrame(raf);
+  draw();
+
+  clearInterval(timer);
+  if(!REDUCED_MOTION){
+    timer = setInterval(() => { phase += 0.22; }, 700);
+  }
+
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(raf);
+    resize();
+    draw();
+  });
+}
+
+function initChallengeGame(){
+  const root = document.getElementById('challenge');
+  if(!root || root.dataset.ready) return;
+  root.dataset.ready = '1';
+
+  const scenarios = [
+    { prompt:'A wallet extension asks you to paste your recovery phrase into a website to "verify" your account.', answer:'safe', safe:'Correct. Never enter a recovery phrase into a website.', unsafe:'That is a red flag. Recovery phrases should stay offline and private.' },
+    { prompt:'A project repository asks you to run a random shell command copied from an issue comment before reviewing it.', answer:'safe', safe:'Correct. Review commands before executing them, especially from untrusted sources.', unsafe:'Pause first. Treat unknown commands as untrusted code.' },
+    { prompt:'A login page uses the exact domain you expected, HTTPS, and your usual password manager recognizes it.', answer:'unsafe', safe:'Still verify the destination before entering credentials.', unsafe:'Good. The signals are consistent, but verification is still the safer habit.' }
+  ];
+
+  let index=0, score=0, time=20, interval=null, locked=false;
+  const promptEl=root.querySelector('#challenge-prompt');
+  const progressEl=root.querySelector('#challenge-progress');
+  const timerEl=root.querySelector('#challenge-timer');
+  const scoreEl=root.querySelector('#challenge-score');
+  const feedbackEl=root.querySelector('#challenge-feedback');
+  const buttons=[...root.querySelectorAll('.challenge-choice')];
+
+  function render(){
+    const s=scenarios[index];
+    promptEl.textContent=s.prompt;
+    progressEl.textContent=`SCENARIO ${String(index+1).padStart(2,'0')}`;
+    scoreEl.textContent=String(score).padStart(2,'0');
+    feedbackEl.textContent='';
+    buttons.forEach(b=>b.disabled=false);
+    locked=false;
+    time=20;
+    timerEl.textContent='20s';
+  }
+
+  function finish(){
+    clearInterval(interval);
+    buttons.forEach(b=>b.disabled=true);
+    feedbackEl.textContent=`CHALLENGE COMPLETE // SCORE ${String(score).padStart(2,'0')} / 03`;
+    timerEl.textContent='DONE';
+  }
+
+  function startTimer(){
+    clearInterval(interval);
+    interval=setInterval(()=>{
+      time--;
+      timerEl.textContent=`${time}s`;
+      if(time<=0){
+        clearInterval(interval);
+        if(!locked){
+          locked=true;
+          feedbackEl.textContent='TIMEOUT // REVIEW THE SIGNAL BEFORE ACTING';
+          buttons.forEach(b=>b.disabled=true);
+          setTimeout(()=>{
+            index++;
+            if(index>=scenarios.length) finish();
+            else { render(); startTimer(); }
+          },900);
+        }
+      }
+    },1000);
+  }
+
+  buttons.forEach(btn=>btn.addEventListener('click',()=>{
+    if(locked) return;
+    locked=true;
+    const correct=btn.dataset.answer===scenarios[index].answer;
+    if(correct) score++;
+    scoreEl.textContent=String(score).padStart(2,'0');
+    feedbackEl.textContent=correct ? scenarios[index].safe : scenarios[index].unsafe;
+    buttons.forEach(b=>b.disabled=true);
+    clearInterval(interval);
+    setTimeout(()=>{
+      index++;
+      if(index>=scenarios.length) finish();
+      else { render(); startTimer(); }
+    },1000);
+  }));
+
+  render();
+  startTimer();
+}
+
+
+</script>
+<script>
+(function(){
+
+  const loader = document.getElementById('security-loader');
+
+  if(!loader) return;
+
+  const steps = loader.querySelectorAll('.security-loader-line');
+  const fill = document.getElementById('security-loader-fill');
+  const percent = document.getElementById('security-loader-percent');
+  const access = document.getElementById('security-loader-access');
+
+  let progress = 0;
+
+  const timings = [
+    350,
+    850,
+    1350,
+    1850,
+    2350
+  ];
+
+  steps.forEach((step, index) => {
+
+    setTimeout(() => {
+
+      step.classList.add('active');
+
+      setTimeout(() => {
+        step.classList.remove('active');
+        step.classList.add('done');
+      }, 350);
+
+      progress = (index + 1) * 20;
+
+      fill.style.width = progress + '%';
+      percent.textContent = progress + '%';
+
+    }, timings[index]);
+
+  });
+
+  setTimeout(() => {
+
+    access.classList.add('show');
+
+  }, 2800);
+
+  setTimeout(() => {
+
+    loader.classList.add('hidden');
+
+    setTimeout(() => {
+      loader.remove();
+    }, 800);
+
+  }, 3400);
+
+})();
+</script>
+</body>
+</html>
